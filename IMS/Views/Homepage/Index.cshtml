@@ -1,0 +1,117 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Management System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .hero-section {
+            background: url('https://plus.unsplash.com/premium_photo-1661902921615-5687946911c0?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center/cover;
+            height: 90vh;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+        .hero-section::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: auto;
+        }
+        .feature-box {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body class="hold-transition layout-top-nav">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand-md navbar-dark bg-dark">
+        <div class="container">
+            <a href="#" class="navbar-brand">
+                <i class="fas fa-shield-alt"></i>
+                <span class="brand-text font-weight-light">Incident Management</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link">Features</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link">About</a></li>
+                     <li class="nav-item"><a asp-controller="Login" asp-action="" class="nav-link btn btn-primary text-white">Login</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="display-4 font-weight-bold">Incident Management System</h1>
+                <p class="lead">Manage incidents efficiently, track progress, and enhance security.</p>
+                <a href="login.html" class="btn btn-lg btn-primary"><i class="fas fa-sign-in-alt"></i> Get Started</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="container my-5">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card feature-box">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger"></i>
+                    <h4>Real-time Incident Tracking</h4>
+                    <p>Monitor and manage security incidents in real-time.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-box">
+                    <i class="fas fa-chart-line fa-3x text-success"></i>
+                    <h4>Advanced Analytics</h4>
+                    <p>Get insights with reports and trends.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-box">
+                    <i class="fas fa-users-cog fa-3x text-info"></i>
+                    <h4>User Role Management</h4>
+                    <p>Assign roles and permissions for better security.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="main-footer text-center bg-dark text-white py-3">
+        <strong>© 2025 Incident Management System. All rights reserved.</strong>
+    </footer>
+
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+</body>
+</html>

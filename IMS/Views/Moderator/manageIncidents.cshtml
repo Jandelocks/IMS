@@ -1,0 +1,224 @@
+﻿@model List<IncidentViewModel>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>IMS - Moderator Dashboard</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-light bg-light border-bottom">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-user"></i> Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-danger" asp-controller="login" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="#" class="brand-link text-center">
+                <span class="brand-text font-weight-bold">IMS - Moderator</span>
+            </a>
+            <div class="sidebar">
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                        <li class="nav-item">
+                            <a asp-action="" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a asp-action="manageIncidents" class="nav-link active">
+                                <i class="nav-icon fas fa-exclamation-triangle"></i>
+                                <p>Incident Management</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a asp-action="reviewReports" class="nav-link">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <p>Review Reports</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a asp-action="userManagement" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>User Management</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0 fw-bold">Incident Management</h1>
+                            <p class="text-muted">Manage and track reported incidents.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5>Incident List</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-hover table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Status</th>
+                                        <th>Date Reported</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @if (Model != null && Model.Any())
+                                    {
+                                        @foreach (var item in Model)
+                                        {
+                                            var incident = item.Incident;
+                                            var attachments = item.Attachments;
+                                            <tr>
+                                                <td>@incident.tittle</td>
+                                                <td>
+                                                    <span class="badge @(incident.status == "Pending" ? "bg-warning" : "bg-success")">
+                                                        @incident.status
+                                                    </span>
+                                                </td>
+                                                <td>@incident.reported_at.ToString("MMM dd, yyyy")</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewIncidentModal-@incident.incident_id">View</button>
+                                                    @if (@incident.status == "In Progress")
+                                                    {
+                                                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#resolveIncidentModal-@incident.incident_id">Resolve</button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <!-- View Incident Modal -->
+                                            <div class="modal fade" id="viewIncidentModal-@incident.incident_id" tabindex="-1" aria-labelledby="viewIncidentLabel" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-info text-white">
+                                                            <h5 class="modal-title">Incident Details</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p><strong>Reporter:</strong> @((item.User != null) ? $"{item.User.full_name}" : "Unknown")</p>
+
+                                                            <p><strong>Title:</strong> @incident.tittle</p>
+                                                            <p><strong>Description:</strong> @incident.description </p>
+
+                                                            <div class="col-md-12">
+                                                                <p><strong><i class="fas fa-paperclip"></i> Attachments:</strong></p>
+                                                                @if (attachments.Any())
+                                                                {
+                                                                    <div class="row">
+                                                                        @foreach (var attachment in attachments)
+                                                                        {
+                                                                            string fileExtension = System.IO.Path.GetExtension(attachment.file_path).ToLower();
+                                                                            bool isImage = fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png" || fileExtension == ".gif";
+
+                                                                            <div class="col-md-4 mb-2">
+                                                                                @if (isImage)
+                                                                                {
+                                                                                    <a href="@attachment.file_path" target="_blank">
+                                                                                        <img src="@attachment.file_path" class="img-fluid img-thumbnail" alt="Attachment Image">
+                                                                                    </a>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <a href="@attachment.file_path" target="_blank" class="btn btn-outline-primary w-100">
+                                                                                        <i class="fas fa-file-alt"></i> @attachment.file_name
+                                                                                    </a>
+                                                                                }
+                                                                            </div>
+                                                                        }
+                                                                    </div>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="text-muted">No attachments available.</p>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Resolve Incident Modal -->
+                                            <div class="modal fade" id="resolveIncidentModal-@incident.incident_id" tabindex="-1" aria-labelledby="resolveIncidentLabel" aria-hidden="true">
+                                                <form action="resolve" method="post">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header bg-success text-white">
+                                                                <h5 class="modal-title">Resolve Incident</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p><strong>Incident:</strong> @incident.tittle</p>
+                                                                <input type="hidden" name="incidentId" value="@incident.incident_id" />
+                                                                <input type="hidden" name="userid" value="@item.User.user_id" />
+                                                                <label for="comments">Comments:</label>
+                                                                <textarea class="form-control" name="comments" id="comments" rows="3" placeholder="Add resolution details..."></textarea>
+                                                                <label class="mt-2">Attach File:</label>
+                                                                <input type="file" name="attachments" class="form-control">
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="submit" class="btn btn-success">Resolve</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr><td colspan="7" class="text-center">No records found</td></tr>
+                                    }
+                                </tbody>
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Bootstrap and AdminLTE JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+</body>
+</html>
