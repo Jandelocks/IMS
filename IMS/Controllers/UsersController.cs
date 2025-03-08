@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Security.Cryptography;
-using static IMS.Models.IMSModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using IMS.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
+using System.Net.Mail;
 namespace IMS.Controllers
 
 {
@@ -24,9 +24,10 @@ namespace IMS.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var incidents = await _context.categories.ToListAsync();
+            return View("Index",incidents);
         }
 
         [HttpPost]
@@ -110,6 +111,7 @@ namespace IMS.Controllers
             // Fetch incidents for the logged-in user
             var incidents = await _context.incidents
                                           .Where(i => i.user_id == userId)
+                                          .Where(u => u.status != "Closed")
                                           .ToListAsync();
 
             // Fetch attachments for the same user
@@ -255,8 +257,52 @@ namespace IMS.Controllers
             ViewBag.TotalReports = userReports.Count;
             ViewBag.PendingReports = userReports.Count(i => i.status == "Pending");
             ViewBag.ResolvedReports = userReports.Count(i => i.status == "Resolved");
-
+            ViewBag.ClosedReports = userReports.Count(i => i.status == "Closed");
             return View("Dashboard", userReports); // Pass userReports directly to the view
+        }
+
+        public async Task<IActionResult> Resolved(int update_id)
+        {
+
+            var update = await _context.updates.FindAsync(update_id);
+            if (update == null)
+            {
+                return NotFound();
+            }
+            var incident = await _context.incidents.FindAsync(update.incident_id);
+            if (incident == null)
+            {
+                return NotFound();
+            }
+            incident.status = "Closed";
+            incident.updated_at = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Reports");
+        }
+
+        public async Task<IActionResult> Closed()
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId"); // Get User ID from session
+
+            // Fetch incidents for the logged-in user
+            var incidents = await _context.incidents
+                                          .Where(i => i.user_id == userId)
+                                          .Where(u => u.status == "Closed")
+                                          .ToListAsync();
+
+            var updates = await _context.updates
+                                       .Where(u => incidents.Select(i => i.incident_id).Contains(u.incident_id))
+                                       .ToListAsync();
+
+            // Combine incidents, attachments, and updates using ViewModel
+            var resolvedlist = incidents.Select(i => new IncidentViewModel
+            {
+                Incident = i,               
+                Updates = updates.Where(u => u.incident_id == i.incident_id).ToList()
+            }).ToList();
+
+            return View("Resolved", resolvedlist);
         }
     }
 }

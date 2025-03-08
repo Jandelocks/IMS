@@ -55,10 +55,11 @@ namespace IMS.Controllers
                 full_name = model.full_name,
                 email = model.email,
                 password = hashedPassword,
-                role = "user",
+                role = string.IsNullOrEmpty(model.role) ? "user" : model.role,
                 created_at = DateTime.UtcNow,
                 department = model.department,
-                token = token
+                token = token,
+                token_forgot = token
             };
 
             _context.users.Add(newUser);

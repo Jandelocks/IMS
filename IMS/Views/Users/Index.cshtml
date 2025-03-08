@@ -1,5 +1,4 @@
-﻿@model IncidentsModel;
-
+﻿@model List<CategoriesModel>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,6 +66,12 @@
                                 <p>Reports</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a asp-action="Closed" class="nav-link">
+                                <i class="nav-icon fa-solid fa-clipboard-check"></i>
+                                <p>Closed Cases</p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -94,14 +99,14 @@
                             <form method="post" asp-action="submitreports" enctype="multipart/form-data" class="needs-validation" novalidate>
                                 <!-- Incident Title -->
                                 <div class="form-floating mb-3">
-                                    <input type="text" asp-for="tittle" class="form-control" id="incidentTitle" placeholder="Enter incident title" required>
+                                    <input type="text" name="tittle" class="form-control" id="incidentTitle" placeholder="Enter incident title" required>
                                     <label for="incidentTitle"><i class="fas fa-heading"></i> Incident Title</label>
                                     <div class="invalid-feedback">Please provide an incident title.</div>
                                 </div>
 
                                 <!-- Incident Description -->
                                 <div class="form-floating mb-3">
-                                    <textarea class="form-control" asp-for="description" id="incidentDescription" placeholder="Describe the incident..." required style="height: 120px;"></textarea>
+                                    <textarea class="form-control" name="description" id="incidentDescription" placeholder="Describe the incident..." required style="height: 120px;"></textarea>
                                     <label for="incidentDescription"><i class="fas fa-align-left"></i> Description</label>
                                     <div class="invalid-feedback">Please provide a description of the incident.</div>
                                 </div>
@@ -109,44 +114,21 @@
                                 <!-- Incident Category -->
                                 <div class="mb-3">
                                     <label class="form-label"><i class="fas fa-list"></i> Incident Category</label>
-                                    <select class="form-select" asp-for="category" required>
+                            
+                                        <select class="form-select" name="category" required>
                                         <option value="" disabled selected>Select Category</option>
-                                        <option value="Unauthorized Access">Unauthorized Access</option>
-                                        <option value="Data Breach">Data Breach</option>
-                                        <option value="Malware Attack">Malware / Ransomware Attack</option>
-                                        <option value="Phishing Attempt">Phishing Attempt</option>
-                                        <option value="Password Compromise">Password Compromise</option>
-                                        <option value="Denial of Service Attack">Denial of Service (DoS) Attack</option>
-                                        <option value="System Crash">System Crash / Downtime</option>
-                                        <option value="Network Issue">Network Connectivity Issue</option>
-                                        <option value="Software Bug">Software Bug / Application Failure</option>
-                                        <option value="Server Overload">Server Overload</option>
-                                        <option value="Hardware Malfunction">Hardware Malfunction</option>
-                                        <option value="Power Outage">Power Outage</option>
-                                        <option value="Equipment Failure">Equipment Failure</option>
-                                        <option value="Data Loss">Data Loss / Corruption</option>
-                                        <option value="Backup Failure">Backup Failure</option>
-                                        <option value="Service Unavailability">Service Unavailability</option>
-                                        <option value="Security Policy Violation">Violation of Security Policies</option>
-                                        <option value="Resource Misuse">Misuse of Company Resources</option>
-                                        <option value="Unauthorized Data Sharing">Unauthorized Data Sharing</option>
-                                        <option value="Privacy Violation">Privacy Violation</option>
-                                        <option value="Workplace Injury">Workplace Injury</option>
-                                        <option value="Fire Hazard">Fire Hazard</option>
-                                        <option value="Unauthorized Visitors">Unauthorized Visitors</option>
-                                        <option value="Health & Safety Concerns">Health & Safety Concerns</option>
-                                        <option value="Customer Complaint">Customer Complaint</option>
-                                        <option value="Service Disruption">Service Disruption</option>
-                                        <option value="Product Defect">Product Defect</option>
-                                        <option value="Fraudulent Activity">Fraudulent Activity</option>
-                                    </select>
+                                        @foreach (var cat in Model)
+                                        {
+                                            <option value="@cat.category_name">@cat.category_name</option>
+                                        }
+                                        </select>
                                     <div class="invalid-feedback">Please select a category.</div>
                                 </div>
 
                                 <!-- Priority Level -->
                                 <div class="mb-3">
                                     <label class="form-label"><i class="fas fa-exclamation-triangle"></i> Priority Level</label>
-                                    <select class="form-select" asp-for="priority" required>
+                                    <select class="form-select" name="priority" required>
                                         <option value="High" class="text-danger">🔴 High</option>
                                         <option value="Medium" class="text-warning">🟡 Medium</option>
                                         <option value="Low" class="text-success">🟢 Low</option>

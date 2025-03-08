@@ -47,23 +47,26 @@
                     </div>
                     <span asp-validation-for="email" class="text-danger"></span>
 
-                    <!-- Department Dropdown -->
-                    <div class="input-group mb-3">
-                        <select class="form-control" asp-for="department" required>
-                            <option value="" disabled selected>Select Department</option>
-                            <option value="IT">IT</option>
-                            <option value="HR">HR</option>
-                            <option value="Finance">Finance</option>
-                            <option value="Operations">Operations</option>
-                            <option value="Support">Support</option>
-                        </select>
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-building"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <span asp-validation-for="department" class="text-danger"></span>
+                    @* <!-- Department Dropdown --> *@
+                    @* <div class="input-group mb-3"> *@
+                    @*     <select class="form-control" asp-for="department" required> *@
+                    @*         <option value="" disabled selected>Select Department</option> *@
+                    @*         <option value="IT">IT</option> *@
+                    @*         <option value="HR">HR</option> *@
+                    @*         <option value="Finance">Finance</option> *@
+                    @*         <option value="Operations">Operations</option> *@
+                    @*         <option value="Support">Support</option> *@
+                    @*     </select> *@
+                    @*     <div class="input-group-append"> *@
+                    @*         <div class="input-group-text"> *@
+                    @*             <span class="fas fa-building"></span> *@
+                    @*         </div> *@
+                    @*     </div> *@
+                    @* </div> *@
+                    @* <span asp-validation-for="department" class="text-danger"></span> *@
+
+                    <input type="hidden" name="role" value="user">
+                    <input type="hidden" name="department" value="NONE">
 
                     <!-- Password -->
                     <div class="input-group mb-3">

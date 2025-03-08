@@ -176,7 +176,7 @@
 
                                             <!-- Resolve Incident Modal -->
                                             <div class="modal fade" id="resolveIncidentModal-@incident.incident_id" tabindex="-1" aria-labelledby="resolveIncidentLabel" aria-hidden="true">
-                                                <form action="resolve" method="post">
+                                                <form action="resolve" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
                                                     <div class="modal-dialog">
                                                         <div class="modal-content">
                                                             <div class="modal-header bg-success text-white">
@@ -190,7 +190,7 @@
                                                                 <label for="comments">Comments:</label>
                                                                 <textarea class="form-control" name="comments" id="comments" rows="3" placeholder="Add resolution details..."></textarea>
                                                                 <label class="mt-2">Attach File:</label>
-                                                                <input type="file" name="attachments" class="form-control">
+                                                                <input type="file" name="attach" class="form-control">
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="submit" class="btn btn-success">Resolve</button>

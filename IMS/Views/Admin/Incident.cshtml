@@ -25,7 +25,7 @@
                     <a class="nav-link" href="#"><i class="fas fa-user"></i> Profile</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="users" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    <a class="nav-link" asp-controller="login" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </li>
             </ul>
         </nav>
@@ -128,6 +128,14 @@
                                                     <i class="fa-solid fa-paper-plane"></i>
                                                 </button>
                                             }
+                                            @if (incident.status == "Closed")
+                                            {
+                                                <button type="button" class="btn btn-primary btn-sm"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#comments-@incident.incident_id">
+                                                    <i class="fa-solid fa-comment"></i>
+                                                </button>
+                                            }
                                         </td>
                                     </tr>
 
@@ -172,7 +180,7 @@
                                     <!-- Modal Details -->
                                     <div class="modal fade" id="incidentModal-@incident.incident_id" tabindex="-1"
                                          aria-labelledby="modalTitle-@incident.incident_id" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                        <div class="modal-dialog modal-dialog-centered modal-md">
                                             <div class="modal-content">
                                                 <div class="modal-header
                                                             @(incident.priority == "Low" ? "bg-success" :
@@ -206,7 +214,7 @@
                                                                 </p>
                                                             </div>
                                                             <div class="col-md-6">
-                                                                <p><strong><i class="fas fa-calendar-alt"></i> Reported At:</strong> @incident.reported_at</p>
+                                                                <p><strong><i class="fas fa-calendar-alt"></i> Reported At:</strong> @incident.reported_at.ToString("MMM dd, yyyy")</p>
                                                             </div>
                                                         </div>
                                                         <div class="row mb-3">
@@ -289,6 +297,52 @@
                                                         <i class="fas fa-times"></i> Close
                                                     </button>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Modal for Moderator Comments and Attachments -->
+                                    <div class="modal fade" id="comments-@incident.incident_id" tabindex="-1" aria-labelledby="comments-modal-label" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-md">
+                                            <div class="modal-content">
+                                                @if (item.Updates.Any())
+                                                {
+                                                    @foreach (var update in item.Updates)
+                                                    {
+                                                        <div class="modal-header bg-primary text-white">
+                                                            <h5 class="modal-title" id="comments-modal-label">
+                                                                <i class="fas fa-comments"></i> Moderator Review
+                                                            </h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="container">
+                                                                <h6><i class="fas fa-comment-dots"></i> Moderator Comments:</h6>
+                                                                <div class="border rounded p-3 bg-light">
+
+                                                                    <div class="mb-2 p-2 border-bottom">
+                                                                        @* <p class="fw-bold">@update.user_id (Moderator)</p> *@
+                                                                        <p>@update.update_text</p>
+                                                                        <small class="text-muted">@update.updated_at</small>
+                                                                    </div>
+
+                                                                </div>
+
+                                                                <hr>
+
+                                                                <h6><i class="fas fa-paperclip"></i> Attachments:</h6>
+                                                                <div class="row">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- Modal Footer with Close Report Button -->
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                <i class="fas fa-times"></i> Close
+                                                            </button>
+                                                        </div>
+                                                    }
+                                                }
                                             </div>
                                         </div>
                                     </div>

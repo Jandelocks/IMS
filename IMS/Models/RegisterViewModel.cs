@@ -21,5 +21,7 @@ namespace IMS.ViewModels
         [Required(ErrorMessage = "Confirm Password is required.")]
         [Compare("password", ErrorMessage = "Passwords do not match.")]
         public string confirmpassword { get; set; }
+
+        public string role { get; set; }
     }
 }

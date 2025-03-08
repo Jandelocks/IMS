@@ -77,7 +77,10 @@
                     <div class="card">
                         <div class="card-header bg-primary text-white d-flex align-items-center">
                             <h3 class="card-title"><i class="fas fa-users"></i> User Management</h3>
-                            <button class="btn btn-success ms-auto"><i class="fas fa-user-plus"></i> Add User</button>
+                            <button class="btn btn-info btn-sm ms-auto" data-bs-toggle="modal"
+                                    data-bs-target="#addUserModal">
+                                <i class="fas fa-user-plus"></i> Add User
+                            </button>
                         </div>
                         <div class="card-body">
                             <div class="row mb-3">
@@ -116,17 +119,18 @@
                                                 <td>@user.department</td>
                                                 <td>@user.role</td>
                                                 <td class="text-center">
+                                                <td class="text-center">
                                                     <div class="dropdown">
                                                         <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                            @if (user.isRistrict)
-                                                            {
+                                                                @if (user.isRistrict)
+                                                                {
                                                                 <span class="text-danger"><i class="fas fa-ban"></i> Restricted</span>
-                                                                                                               
-                                                            }
-                                                            else
-                                                            {
+
+                                                                }
+                                                                else
+                                                                {
                                                                 <span class="text-success"><i class="fas fa-check-circle"></i> Active</span>
-                                                            }
+                                                                }
                                                         </button>
                                                         <ul class="dropdown-menu">
                                                             <li>
@@ -162,7 +166,49 @@
                     </div>
                 </div>
             </section>
-
+            <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addUserModalLabel">Add New User</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" asp-controller="login" asp-action="newuser">
+                                <div class="">
+                                    <label for="fullName" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="fullName" name="full_name" required>
+                                </div>
+                                <div class="">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                <div class="">
+                                    <label for="department" class="form-label">Department</label>
+                                    <input type="text" class="form-control" id="department" name="department">
+                                </div>
+                                <div class="">
+                                    <label for="role" class="form-label">Role</label>
+                                    <select class="form-control" id="role" name="role" required>
+                                        <option value="admin">Admin</option>
+                                        <option value="user">User</option>
+                                        <option value="moderator">Moderator</option>
+                                    </select>
+                                </div>
+                                <div class="">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="department" name="password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmpassword" class="form-label">Confirm Password</label>
+                                    <input type="password" class="form-control" id="department" name="confirmpassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add User</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

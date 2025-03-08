@@ -37,10 +37,15 @@ namespace IMS.Controllers
             // Fetch attachments related to those incidents
             var attachments = await _context.attachments.ToListAsync();
 
+            var updates = await _context.updates
+                                        .Where(u => incidents.Select(i => i.incident_id)
+                                        .Contains(u.incident_id))
+                                        .ToListAsync();
+
             // Fetch all users who are moderators
             var moderators = await _context.users
-                .Where(u => u.role == "moderator")
-                .ToListAsync();
+                                           .Where(u => u.role == "moderator")
+                                           .ToListAsync();
 
             var users = await _context.users.ToListAsync();
 
@@ -50,7 +55,8 @@ namespace IMS.Controllers
                 Incident = i,
                 Attachments = attachments.Where(a => a.incident_id == i.incident_id).ToList(),
                 Users = moderators, // Pass the list of moderators
-                User = users.FirstOrDefault(u => u.user_id == i.assigned_too)
+                User = users.FirstOrDefault(u => u.user_id == i.assigned_too),
+                Updates = updates.Where(u => u.incident_id == i.incident_id).ToList()
             }).ToList();
 
             return View("Incident", incidentList);
