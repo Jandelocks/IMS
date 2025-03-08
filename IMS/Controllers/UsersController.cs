@@ -10,6 +10,7 @@ using IMS.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using System.Net.Mail;
+using Newtonsoft.Json.Linq;
 namespace IMS.Controllers
 
 {
@@ -152,14 +153,25 @@ namespace IMS.Controllers
         }
 
         //Update
-        public IActionResult edit(int Id)
+        public async Task<IActionResult> Edit(string token)
         {
-            string? token = HttpContext.Session.GetString("Token");
-            string? userRole = HttpContext.Session.GetString("Role");
+            //var incident = await _context.incidents.FindAsync(Id);
+            var categories = await _context.categories.ToListAsync();
+            var incident = await _context.incidents.FirstOrDefaultAsync(i => i.token == token);
+            if (incident == null)
+            {
+                return NotFound();
+            }
 
-            var inc = _context.incidents.Find(Id);
-            return View("Update", inc); // Redirect to Edit View
+            var viewModel = new IncidentViewModel
+            {
+                Incident = incident,
+                Categories = categories
+            };
+
+            return View("Update", viewModel);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Updateinc(int Id, string tittle, string description,

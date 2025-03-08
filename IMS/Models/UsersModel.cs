@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IMS.Models
 {
@@ -31,6 +34,10 @@ namespace IMS.Models
 
         public bool isRistrict { get; set; }
 
-        public ICollection<IncidentsModel> Incidents { get; set; }
+        // Navigation properties
+        public virtual ICollection<IncidentsModel> Incidents { get; set; }
+        public virtual ICollection<UpdatesModel> Updates { get; set; }
+        public virtual ICollection<CommentsModel> Comments { get; set; }
+        public virtual ICollection<AttachmentsModel> Attachments { get; set; }
     }
 }

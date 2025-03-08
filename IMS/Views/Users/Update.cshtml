@@ -1,4 +1,4 @@
-﻿@model IncidentsModel;
+﻿@model IncidentViewModel
 
 <!DOCTYPE html>
 <html lang="en">
@@ -69,7 +69,7 @@
                         </li>
                         <li class="nav-item">
                             <a asp-action="Closed" class="nav-link">
-                                <i class="fa-solid fa-clipboard-check"></i>
+                                <i class="nav-icon fa-solid fa-clipboard-check"></i>
                                 <p>Closed Cases</p>
                             </a>
                         </li>
@@ -98,54 +98,29 @@
                         </div>
                         <div class="card-body">
                             <form method="post" asp-action="Updateinc" enctype="multipart/form-data">
-                                <input type="hidden" name="Id" value="@Model.incident_id" />
+                                <input type="hidden" name="Id" value="@Model.Incident.incident_id" />
 
                                 <!-- Incident Title -->
                                 <div class="mb-3">
                                     <label class="form-label"><i class="fas fa-heading"></i> Incident Title</label>
-                                    <input type="text" name="tittle" class="form-control" value="@Model.tittle" required>
+                                    <input type="text" name="tittle" class="form-control" value="@Model.Incident.tittle" required>
                                 </div>
 
                                 <!-- Incident Description -->
                                 <div class="mb-3">
                                     <label class="form-label"><i class="fas fa-file-alt"></i> Description</label>
-                                    <textarea class="form-control" name="description" rows="4" required>@Model.description</textarea>
+                                    <textarea class="form-control" name="description" rows="4" required>@Model.Incident.description</textarea>
                                 </div>
 
                                 <!-- Incident Category -->
                                 <div class="mb-3">
                                     <label class="form-label"><i class="fas fa-tags"></i> Category</label>
                                     <select class="form-select" name="category" required>
-                                        <option value="@Model.category" selected>@Model.category</option>
-                                        <option value="" disabled>Select Category</option>
-                                        <option value="Unauthorized Access">Unauthorized Access</option>
-                                        <option value="Data Breach">Data Breach</option>
-                                        <option value="Malware Attack">Malware / Ransomware Attack</option>
-                                        <option value="Phishing Attempt">Phishing Attempt</option>
-                                        <option value="Password Compromise">Password Compromise</option>
-                                        <option value="Denial of Service Attack">Denial of Service (DoS) Attack</option>
-                                        <option value="System Crash">System Crash / Downtime</option>
-                                        <option value="Network Issue">Network Connectivity Issue</option>
-                                        <option value="Software Bug">Software Bug / Application Failure</option>
-                                        <option value="Server Overload">Server Overload</option>
-                                        <option value="Hardware Malfunction">Hardware Malfunction</option>
-                                        <option value="Power Outage">Power Outage</option>
-                                        <option value="Equipment Failure">Equipment Failure</option>
-                                        <option value="Data Loss">Data Loss / Corruption</option>
-                                        <option value="Backup Failure">Backup Failure</option>
-                                        <option value="Service Unavailability">Service Unavailability</option>
-                                        <option value="Security Policy Violation">Violation of Security Policies</option>
-                                        <option value="Resource Misuse">Misuse of Company Resources</option>
-                                        <option value="Unauthorized Data Sharing">Unauthorized Data Sharing</option>
-                                        <option value="Privacy Violation">Privacy Violation</option>
-                                        <option value="Workplace Injury">Workplace Injury</option>
-                                        <option value="Fire Hazard">Fire Hazard</option>
-                                        <option value="Unauthorized Visitors">Unauthorized Visitors</option>
-                                        <option value="Health & Safety Concerns">Health & Safety Concerns</option>
-                                        <option value="Customer Complaint">Customer Complaint</option>
-                                        <option value="Service Disruption">Service Disruption</option>
-                                        <option value="Product Defect">Product Defect</option>
-                                        <option value="Fraudulent Activity">Fraudulent Activity</option>
+                                        <option value="@Model.Incident.category" selected>@Model.Incident.category</option>
+                                        @foreach (var cat in Model.Categories)
+                                        {
+                                            <option value="@cat.category_name">@cat.category_name</option>
+                                        }
                                     </select>
                                 </div>
 
@@ -154,7 +129,7 @@
                                     <label class="form-label"><i class="fas fa-exclamation-circle"></i> Priority Level</label>
                                     <select class="form-select" name="priority" required>
                                         <option value="" disabled>Select priority</option>
-                                        <option value="@Model.priority" selected>@Model.priority</option>
+                                        <option value="@Model.Incident.priority" selected>@Model.Incident.priority</option>
                                         <option value="High" class="text-danger">High</option>
                                         <option value="Medium" class="text-warning">Medium</option>
                                         <option value="Low" class="text-success">Low</option>

@@ -128,7 +128,7 @@
                                                     </button>
                                                     @if (incident.status == "Pending")
                                                     {
-                                                        <a asp-action="edit" asp-route-Id="@incident.incident_id" class="btn btn-warning btn-sm">
+                                                        <a asp-action="edit" asp-route-token="@incident.token" class="btn btn-warning btn-sm">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
                                                         <a asp-action="delete" asp-route-Id="@incident.incident_id" class="btn btn-danger btn-sm">

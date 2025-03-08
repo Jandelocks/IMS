@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IMS.Models
@@ -9,7 +10,7 @@ namespace IMS.Models
         public int incident_id { get; set; }
 
         [Required]
-        [ForeignKey("UsersModel")]
+        [ForeignKey("User")]
         public int user_id { get; set; }
 
         [Required]
@@ -30,13 +31,14 @@ namespace IMS.Models
         [Required]
         public DateTime reported_at { get; set; }
 
-        public int? assigned_too { get; set; }
+        public int? assigned_too { get; set; } // Nullable foreign key
 
         [Required]
         public string token { get; set; }
 
         public DateTime? updated_at { get; set; }
 
-        public UsersModel User { get; set; }
+        // Navigation property
+        public virtual UsersModel User { get; set; }    
     }
 }
