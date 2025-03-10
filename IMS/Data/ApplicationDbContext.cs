@@ -65,6 +65,13 @@ namespace IMS.Data
                 .WithMany()
                 .HasForeignKey(a => a.incident_id)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            //Logs - Users
+            modelBuilder.Entity<LogsModel>()
+                .HasOne(l => l.User)
+                .WithMany()
+                .HasForeignKey(l => l.user_id)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace IMS.Models
         [Required]
         public DateTime reported_at { get; set; }
 
-        public int? assigned_too { get; set; } // Nullable foreign key
+        public int? assigned_too { get; set; }
 
         [Required]
         public string token { get; set; }

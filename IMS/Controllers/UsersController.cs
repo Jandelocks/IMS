@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using System.Net.Mail;
 using Newtonsoft.Json.Linq;
+using IMS.Services;
 namespace IMS.Controllers
 
 {
@@ -19,10 +20,11 @@ namespace IMS.Controllers
     {
 
         private readonly ApplicationDbContext _context;
-
-        public UsersController(ApplicationDbContext context)
+        private readonly LogService _logService;
+        public UsersController(ApplicationDbContext context, LogService logService)
         {
             _context = context;
+            _logService = logService;
         }
 
         public async Task<IActionResult> Index()
@@ -100,6 +102,7 @@ namespace IMS.Controllers
                 await _context.SaveChangesAsync(); // Save to database
             }
 
+            _logService.AddLog(userId, $"Created an incident: {tittle}");
             return RedirectToAction("dashboard"); // Redirect to Dashboard
         }
 
@@ -140,7 +143,9 @@ namespace IMS.Controllers
         [HttpGet]
         public IActionResult delete(int Id)
         {
+            int? userId = HttpContext.Session.GetInt32("UserId"); // Get User ID from session
             var person = _context.incidents.Find(Id); // Find the person by ID
+            
             if (person == null)
             {
                 return NotFound(); // Prevents error if person does not exist
@@ -148,7 +153,7 @@ namespace IMS.Controllers
 
             _context.incidents.Remove(person); // Remove the person
             _context.SaveChanges(); // Save changes
-
+            _logService.AddLog((int)userId, "Delete Report");
             return RedirectToAction("Reports"); // Redirect back to list
         }
 
@@ -177,6 +182,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> Updateinc(int Id, string tittle, string description,
                                            string category, string priority, IFormFile image)
         {
+            int? userId = HttpContext.Session.GetInt32("UserId");
             var incident = _context.incidents.Find(Id);
             if (incident == null)
             {
@@ -188,9 +194,10 @@ namespace IMS.Controllers
             incident.category = category;
             incident.priority = priority;
 
+            _logService.AddLog((int)userId, $"Update incident: {tittle}");
+
             _context.SaveChanges(); // Save updated incident details
 
-            int? userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
             {
                 return RedirectToAction("Login"); // Redirect if session expired
@@ -251,13 +258,12 @@ namespace IMS.Controllers
                 }
                 await _context.SaveChangesAsync(); // Save attachment to database
             }
+            
             return RedirectToAction("Reports");
         }
 
         public async Task<IActionResult> Dashboard()
         {
-            string? token = HttpContext.Session.GetString("Token");
-            string? userRole = HttpContext.Session.GetString("Role");
             int? userId = HttpContext.Session.GetInt32("UserId");
 
             // Fetch reports belonging to the logged-in user
@@ -275,7 +281,7 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> Resolved(int update_id)
         {
-
+            int? userId = HttpContext.Session.GetInt32("UserId");
             var update = await _context.updates.FindAsync(update_id);
             if (update == null)
             {
@@ -290,6 +296,7 @@ namespace IMS.Controllers
             incident.updated_at = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
+            _logService.AddLog((int)userId, "Incident closed");
             return RedirectToAction("Reports");
         }
 

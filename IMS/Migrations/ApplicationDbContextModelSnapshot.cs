@@ -172,13 +172,17 @@ namespace IMS.Migrations
 
             modelBuilder.Entity("IMS.Models.LogsModel", b =>
                 {
-                    b.Property<int>("user_id")
+                    b.Property<int>("log_id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("user_id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("log_id"));
 
                     b.Property<string>("action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("full_name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -189,7 +193,12 @@ namespace IMS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("user_id");
+                    b.Property<int>("user_id")
+                        .HasColumnType("int");
+
+                    b.HasKey("log_id");
+
+                    b.HasIndex("user_id");
 
                     b.ToTable("logs");
                 });
@@ -270,7 +279,6 @@ namespace IMS.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("token_forgot")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("user_id");
@@ -320,6 +328,17 @@ namespace IMS.Migrations
                 {
                     b.HasOne("IMS.Models.UsersModel", "User")
                         .WithMany("Incidents")
+                        .HasForeignKey("user_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("IMS.Models.LogsModel", b =>
+                {
+                    b.HasOne("IMS.Models.UsersModel", "User")
+                        .WithMany()
                         .HasForeignKey("user_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

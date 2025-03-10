@@ -43,7 +43,7 @@
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
                         <li class="nav-item">
-                            <a asp-action="dashboard" class="nav-link active">
+                            <a asp-action="" class="nav-link active">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>Dashboard</p>
                             </a>
@@ -58,12 +58,6 @@
                             <a asp-action="reviewReports" class="nav-link">
                                 <i class="nav-icon fas fa-file-alt"></i>
                                 <p>Review Reports</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a asp-action="userManagement" class="nav-link">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>User Management</p>
                             </a>
                         </li>
                     </ul>
@@ -85,40 +79,48 @@
             <div class="content">
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-lg-4 col-6">
-                            <div class="small-box bg-warning shadow-sm">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-primary">
                                 <div class="inner">
-                                    <h3>45</h3>
-                                    <p>Pending Incidents</p>
-                                </div>
-                                <div class="icon">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                                <a asp-action="manageIncidents" class="small-box-footer text-dark fw-bold">View Details <i class="fas fa-arrow-circle-right"></i></a>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-6">
-                            <div class="small-box bg-info shadow-sm">
-                                <div class="inner">
-                                    <h3>20</h3>
-                                    <p>Reports to Review</p>
+                                    <h3>@ViewBag.TotalReports</h3>
+                                    <p>Total Reports</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-file-alt"></i>
                                 </div>
-                                <a asp-action="reviewReports" class="small-box-footer text-dark fw-bold">View Details <i class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
-                        <div class="col-lg-4 col-6">
-                            <div class="small-box bg-success shadow-sm">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
                                 <div class="inner">
-                                    <h3>120</h3>
-                                    <p>Users Managed</p>
+                                    <h3>@ViewBag.InProressReport</h3>
+                                    <p>In Progress</p>
                                 </div>
                                 <div class="icon">
-                                    <i class="fas fa-users"></i>
+                                    <i class="fas fa-hourglass-half"></i>
                                 </div>
-                                <a asp-action="userManagement" class="small-box-footer text-dark fw-bold">View Details <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3>@ViewBag.ResolvedReports</h3>
+                                    <p>Resolved Reports</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3>@ViewBag.ClosedReports</h3>
+                                    <p>Closed Reports</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fa-solid fa-clipboard-check"></i>
+                                </div>
                             </div>
                         </div>
                     </div>

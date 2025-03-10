@@ -1,117 +1,102 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Incident Management System</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .hero-section {
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .hero {
             background: url('https://plus.unsplash.com/premium_photo-1661902921615-5687946911c0?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center/cover;
-            height: 90vh;
-            display: flex;
-            align-items: center;
-            text-align: center;
             color: white;
+            padding: 100px 20px;
+            text-align: center;
             position: relative;
         }
-        .hero-section::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+
+            .hero::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+            }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: #007bff;
         }
-        .hero-content {
+
+        .contact-section {
+            background: #f8f9fa;
+            padding: 40px 20px;
+        }
+
+        .hero-overlay {
             position: relative;
             z-index: 1;
-            max-width: 700px;
-            margin: auto;
-        }
-        .feature-box {
-            text-align: center;
-            padding: 20px;
+            padding: 80px 20px;
+            border-radius: 10px;
         }
     </style>
 </head>
-<body class="hold-transition layout-top-nav">
-<div class="wrapper">
-
-    <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand-md navbar-dark bg-dark">
-        <div class="container">
-            <a href="#" class="navbar-brand">
-                <i class="fas fa-shield-alt"></i>
-                <span class="brand-text font-weight-light">Incident Management</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link">Features</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link">About</a></li>
-                     <li class="nav-item"><a asp-controller="Login" asp-action="" class="nav-link btn btn-primary text-white">Login</a></li>
-                </ul>
-            </div>
+<body>
+    <header class="hero d-flex align-items-center justify-content-center">
+        <div class="hero-overlay text-white text-center">
+            <h1>Incident Management System</h1>
+            <p>Efficiently track, manage, and resolve incidents with ease.</p>
+            <a href="#contact" class="btn btn-light btn-lg">Get Started</a>
+            <a href="/login" class="btn btn-dark btn-lg ms-3">Login</a>
         </div>
-    </nav>
+    </header>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="display-4 font-weight-bold">Incident Management System</h1>
-                <p class="lead">Manage incidents efficiently, track progress, and enhance security.</p>
-                <a href="login.html" class="btn btn-lg btn-primary"><i class="fas fa-sign-in-alt"></i> Get Started</a>
+    <section class="container mt-5">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <i class="feature-icon bi bi-speedometer2"></i>
+                <h3>Real-Time Tracking</h3>
+                <p>Monitor incidents as they happen, ensuring swift responses.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="feature-icon bi bi-shield-lock"></i>
+                <h3>Secure & Reliable</h3>
+                <p>Robust security measures to protect your sensitive data.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="feature-icon bi bi-graph-up"></i>
+                <h3>Data-Driven Insights</h3>
+                <p>Gain valuable insights through analytics and reports.</p>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="container my-5">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card feature-box">
-                    <i class="fas fa-exclamation-triangle fa-3x text-danger"></i>
-                    <h4>Real-time Incident Tracking</h4>
-                    <p>Monitor and manage security incidents in real-time.</p>
-                </div>
+    <section id="contact" class="contact-section text-center">
+        <h2>Contact Us</h2>
+        <p>Need more details? Get in touch with us today!</p>
+        <form class="w-50 mx-auto">
+            <div class="mb-3">
+                <input type="text" class="form-control" placeholder="Your Name" required>
             </div>
-            <div class="col-md-4">
-                <div class="card feature-box">
-                    <i class="fas fa-chart-line fa-3x text-success"></i>
-                    <h4>Advanced Analytics</h4>
-                    <p>Get insights with reports and trends.</p>
-                </div>
+            <div class="mb-3">
+                <input type="email" class="form-control" placeholder="Your Email" required>
             </div>
-            <div class="col-md-4">
-                <div class="card feature-box">
-                    <i class="fas fa-users-cog fa-3x text-info"></i>
-                    <h4>User Role Management</h4>
-                    <p>Assign roles and permissions for better security.</p>
-                </div>
+            <div class="mb-3">
+                <textarea class="form-control" rows="4" placeholder="Your Message" required></textarea>
             </div>
-        </div>
+            <button type="submit" class="btn btn-primary">Send Message</button>
+        </form>
     </section>
 
-    <!-- Footer -->
-    <footer class="main-footer text-center bg-dark text-white py-3">
-        <strong>© 2025 Incident Management System. All rights reserved.</strong>
+    <footer class="text-center py-3 bg-dark text-white">
+        &copy; 2025 Incident Management System | All Rights Reserved
     </footer>
 
-</div>
-
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

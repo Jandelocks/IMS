@@ -1,5 +1,6 @@
 ﻿using IMS.Data;
 using IMS.Models;
+using IMS.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,9 +13,11 @@ namespace IMS.Controllers
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public AdminController(ApplicationDbContext context)
+        private readonly LogService _logService;
+        public AdminController(ApplicationDbContext context, LogService logService)
         {
             _context = context;
+            _logService = logService;
         }
 
         public async Task<IActionResult> Index()
@@ -73,6 +76,7 @@ namespace IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> RestrictUser(int id)
         {
+            int? userId = HttpContext.Session.GetInt32("UserId");
             var user = await _context.users.FindAsync(id);
             if (user == null)
             {
@@ -81,7 +85,7 @@ namespace IMS.Controllers
 
             user.isRistrict = true; // Restrict user
             await _context.SaveChangesAsync();
-
+            _logService.AddLog((int)userId, $"Restrict: {id}");
             return RedirectToAction("users");
         }
 
@@ -89,6 +93,7 @@ namespace IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> UnrestrictUser(int id)
         {
+            int? userId = HttpContext.Session.GetInt32("UserId");
             var user = await _context.users.FindAsync(id);
             if (user == null)
             {
@@ -97,13 +102,15 @@ namespace IMS.Controllers
 
             user.isRistrict = false; // Unrestrict user
             await _context.SaveChangesAsync();
-
+            _logService.AddLog((int)userId, $"Unrestrict: {id}");
             return RedirectToAction("users");
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Delete(int Id)
         {
+            int? userId = HttpContext.Session.GetInt32("UserId");
             var incident = await _context.incidents.FindAsync(Id);
             if (incident == null)
             {
@@ -118,6 +125,7 @@ namespace IMS.Controllers
             }
 
             _context.incidents.Remove(incident);
+            _logService.AddLog((int)userId, $"Remove Incident: {incident.tittle}");
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Incidents"); // Redirect back to list
@@ -126,6 +134,7 @@ namespace IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> AssignIncident(int id, int assignedUserId)
         {
+            int? userId = HttpContext.Session.GetInt32("UserId");
             var incident = await _context.incidents.FindAsync(id);
             if (incident == null)
             {
@@ -136,7 +145,7 @@ namespace IMS.Controllers
             incident.status = "In Progress";
             _context.Update(incident);
             await _context.SaveChangesAsync();
-
+            _logService.AddLog((int)userId, $"Assign Incidents to : {assignedUserId}");
             return RedirectToAction("Incidents");
         }
         public IActionResult Categories()
@@ -148,6 +157,7 @@ namespace IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> AddCategory(string category_name, string category_desc)
         {
+            int? userId = HttpContext.Session.GetInt32("UserId");
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
             var newcategory = new CategoriesModel 
@@ -159,25 +169,31 @@ namespace IMS.Controllers
 
             _context.categories.Add(newcategory);
             await _context.SaveChangesAsync(); // Save to SQL Server
+
+            _logService.AddLog((int)userId, $"Add new category: {category_name}");
             return RedirectToAction("Categories");
         }
 
         [HttpGet]
         public IActionResult DeleteCategory(int Id)
         {
+            int? userId = HttpContext.Session.GetInt32("UserId");
             var cat = _context.categories.Find(Id); 
             if (cat == null)
             {
                 return NotFound(); 
             }
             _context.categories.Remove(cat); 
-            _context.SaveChanges(); 
+            _context.SaveChanges();
+
+            _logService.AddLog((int)userId, $"Deleted category: {cat.category_name}");
             return RedirectToAction("Categories"); 
         }
 
         [HttpPost]
         public async Task<IActionResult> EditCategory(int id, string category_name, string category_desc)
         {
+            int? userId = HttpContext.Session.GetInt32("UserId");
             var cat = await _context.categories.FindAsync(id);
             if (cat == null)
             {
@@ -188,7 +204,14 @@ namespace IMS.Controllers
             cat.description = category_desc;
             await _context.SaveChangesAsync();
 
+            _logService.AddLog((int)userId, $"Update category: {cat.category_name}");
             return RedirectToAction("Categories");
+        }
+
+        public async Task<IActionResult> usersLogs()
+        {
+            var categories = await _context.logs.ToListAsync();
+            return View("Logs", categories);
         }
     }
 }

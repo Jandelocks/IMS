@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using IMS.Models;
 using IMS.ViewModels;
+using System.Net.Mail;
+using System.Net;
+using IMS.Services;
 
 namespace IMS.Controllers
 {
@@ -13,10 +16,11 @@ namespace IMS.Controllers
     public class LoginController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public LoginController(ApplicationDbContext context)
+        private readonly LogService _logService;
+        public LoginController(ApplicationDbContext context, LogService logService)
         {
             _context = context;
+            _logService = logService;
         }
 
         public IActionResult Index()
@@ -26,6 +30,101 @@ namespace IMS.Controllers
         public IActionResult Register()
         {
             return View("register");
+        }
+
+        public IActionResult Forgotpassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            var user = _context.users.FirstOrDefault(u => u.email == email);
+            if (user == null)
+            {
+                ViewBag.ErrorMessage = "Email not found.";
+                return View();
+            }
+
+            // Generate reset token
+            var resetToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+            user.token_forgot = resetToken;
+            await _context.SaveChangesAsync();
+
+            // Send email with reset link
+            var resetLink = Url.Action("ResetPassword", "Login", new { token = resetToken }, Request.Scheme);
+            string emailBody = $"Click the link below to reset your password:\n{resetLink}";
+
+            bool emailSent = SendEmail(user.email, "Password Reset", emailBody);
+            if (!emailSent)
+            {
+                ViewBag.ErrorMessage = "Failed to send reset email.";
+                return View();
+            }
+
+            ViewBag.SuccessMessage = "A reset link has been sent to your email.";
+            return View();
+        }
+
+        public IActionResult ResetPassword(string token)
+        {
+            var user = _context.users.FirstOrDefault(u => u.token_forgot == token);
+            if (user == null)
+            {
+                return BadRequest("Invalid or expired token.");
+            }
+
+            ViewBag.Token = token;
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string token, string newPassword)
+        {
+            var user = _context.users.FirstOrDefault(u => u.token_forgot == token);
+            if (user == null)
+            {
+                return BadRequest("Invalid or expired token.");
+            }
+
+            user.password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            user.token_forgot = null; // Clear token after reset
+            await _context.SaveChangesAsync();
+
+            ViewBag.SuccessMessage = "Password reset successful. You can now log in.";
+            _logService.AddLog(user.user_id, "Update password");
+            return View("Login");
+        }
+
+        private bool SendEmail(string toEmail, string subject, string body)
+        {
+            try
+            {
+                var smtpClient = new SmtpClient("smtp.gmail.com")
+                {
+                    Port = 587,
+                    Credentials = new NetworkCredential("jandeleido@gmail.com", "mfsu scrv ymrt qlzl"),
+                    EnableSsl = true
+                };
+
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress("jandeleido@gmail.com"),
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = false
+                };
+                mailMessage.To.Add(toEmail);
+
+                smtpClient.Send(mailMessage);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email sending failed: {ex.Message}");
+                return false;
+            }
         }
 
         [HttpPost]
@@ -59,7 +158,7 @@ namespace IMS.Controllers
                 created_at = DateTime.UtcNow,
                 department = model.department,
                 token = token,
-                token_forgot = token
+                token_forgot = null
             };
 
             _context.users.Add(newUser);
@@ -122,6 +221,8 @@ namespace IMS.Controllers
             // Redirect based on role
             if (user.isRistrict == false)
             {
+                _logService.AddLog(user.user_id, "User logged in");
+
                 if (user.role == "admin")
                 {
                     return Redirect("/Admin/");

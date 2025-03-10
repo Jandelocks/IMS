@@ -1,5 +1,6 @@
 ﻿using IMS.Data;
 using IMS.Models;
+using IMS.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,14 +13,25 @@ namespace IMS.Controllers
     public class ModeratorController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public ModeratorController(ApplicationDbContext context)
+        private readonly LogService _logService;
+        public ModeratorController(ApplicationDbContext context, LogService logService)
         {
             _context = context;
+            _logService = logService;
         }
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            var userReports = await _context.incidents.
+                                                Where(i => i.assigned_too == userId)
+                                                .ToListAsync();
+
+            ViewBag.TotalReports = userReports.Count;
+            ViewBag.InProressReport = userReports.Count(i => i.status == "In Progress");
+            ViewBag.ResolvedReports = userReports.Count(i => i.status == "Resolved");
+            ViewBag.ClosedReports = userReports.Count(i => i.status == "Closed");
+
+            return View("Index", userReports);
         }
 
         public async Task<IActionResult> manageIncidents()
@@ -29,8 +41,9 @@ namespace IMS.Controllers
 
             var incidents = await _context.incidents
                                           .Where(i => i.assigned_too == userId)
+                                          .Where(i => i.status != "Closed")
                                           .ToListAsync();
-
+             
             var attachments = await _context.attachments.ToListAsync();
             var users = await _context.users.ToListAsync(); // Fetch all users
             // Combine incidents and only fetch attachments that match the incident_id
@@ -48,7 +61,6 @@ namespace IMS.Controllers
         public async Task<IActionResult> Resolve(int incidentId, int userid, string comments, IFormFile attach)
         {
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)); // Secure token
-
             // Handle file attachment (if provided)
             string filePath = null;
             if (attach != null && attach.Length > 0)
@@ -78,6 +90,8 @@ namespace IMS.Controllers
             };
 
             _context.updates.Add(updates);
+
+
             await _context.SaveChangesAsync();
 
             // Find the existing incident
@@ -90,9 +104,39 @@ namespace IMS.Controllers
             // Update status
             incident.status = "Resolved";
             _context.incidents.Update(incident);
+
+            _logService.AddLog(userid, $"Rosolved an incident: {incident.tittle}");
             await _context.SaveChangesAsync();
 
             return RedirectToAction("ManageIncidents");
+        }
+
+        public async Task<IActionResult> reviewReports()
+        {
+            string? token = HttpContext.Session.GetString("Token");
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+            var incidents = await _context.incidents
+                                          .Where(i => i.assigned_too == userId)
+                                          .Where(i => i.status == "Closed")
+                                          .ToListAsync();
+
+            var updates = await _context.updates
+                                       .Where(u => incidents.Select(i => i.incident_id).Contains(u.incident_id))
+                                       .ToListAsync();
+
+            var attachments = await _context.attachments.ToListAsync();
+            var users = await _context.users.ToListAsync(); // Fetch all users
+            // Combine incidents and only fetch attachments that match the incident_id
+            var incidentList = incidents.Select(i => new IncidentViewModel
+            {
+                Incident = i,
+                Attachments = attachments.Where(a => a.incident_id == i.incident_id).ToList(),
+                User = users.FirstOrDefault(u => u.user_id == i.user_id),
+                Updates = updates.Where(u => u.incident_id == i.incident_id).ToList()
+            }).ToList();
+
+            return View("Reports", incidentList);
         }
     }
 }

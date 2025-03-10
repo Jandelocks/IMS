@@ -62,6 +62,12 @@
                                 <p>Categories</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a asp-action="userslogs" class="nav-link">
+                                <i class="fas fa-clipboard-list"></i>
+                                <p>Logs</p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -82,278 +88,285 @@
                         <option value="Resolved">Resolved</option>
                     </select>
                 </div>
-
-                <!-- Incidents Table -->
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Title</th>
-                                <th>Category</th>
-                                <th>Priority</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model != null && Model.Any())
-                            {
-                                @foreach (var item in Model)
-                                {
-                                    var incident = item.Incident;
-                                    var attachments = item.Attachments;
-                                    var users = item.Users;
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i>Incidents Managements</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Incidents Table -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="table-dark">
                                     <tr>
-                                        <td>@incident.tittle</td>
-                                        <td>@incident.category</td>
-                                        <td>@incident.priority</td>
-                                        <td>@incident.status</td>
-                                        <td>
-                                            <button type="button" class="btn btn-primary btn-sm"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#incidentModal-@incident.incident_id">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-
-                                            @if (incident.status == "Pending")
-                                            {
-                                                <a asp-action="delete" asp-route-Id="@incident.incident_id" class="btn btn-danger btn-sm"
-                                                   onclick="return confirm('Are you sure you want to delete this Incident?');">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
-
-                                                <button type="button" class="btn btn-primary btn-sm"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#assign-@incident.incident_id">
-                                                    <i class="fa-solid fa-paper-plane"></i>
-                                                </button>
-                                            }
-                                            @if (incident.status == "Closed")
-                                            {
-                                                <button type="button" class="btn btn-primary btn-sm"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#comments-@incident.incident_id">
-                                                    <i class="fa-solid fa-comment"></i>
-                                                </button>
-                                            }
-                                        </td>
+                                        <th>Title</th>
+                                        <th>Category</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
                                     </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model != null && Model.Any())
+                                    {
+                                        @foreach (var item in Model)
+                                        {
+                                            var incident = item.Incident;
+                                            var attachments = item.Attachments;
+                                            var users = item.Users;
+                                            <tr>
+                                                <td>@incident.tittle</td>
+                                                <td>@incident.category</td>
+                                                <td>@incident.priority</td>
+                                                <td>@incident.status</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-primary btn-sm"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#incidentModal-@incident.incident_id">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
 
-                                    <!-- Assign Incident Modal -->
-                                    <div class="modal fade" id="assign-@incident.incident_id" tabindex="-1" aria-labelledby="assignModalLabel-@incident.incident_id" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content shadow-lg">
-                                                <div class="modal-header bg-primary text-white">
-                                                    <h5 class="modal-title" id="assignModalLabel-@incident.incident_id">
-                                                        <i class="fa-solid fa-user-check"></i> Assign Incident
-                                                    </h5>
-                                                    <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form method="post" asp-action="AssignIncident" asp-route-id="@incident.incident_id">
-                                                        <div class="mb-3">
-                                                            <label for="assignUser" class="form-label">
-                                                                <strong><i class="fa-solid fa-users"></i> Select a User</strong>
-                                                            </label>
-                                                            <select class="form-select form-control-lg border-primary" name="assignedUserId" required>
-                                                                <option value="" disabled selected>-- Select a Moderator --</option>
-                                                                @foreach (var user in users.Where(u => u.role == "moderator"))
-                                                                {
-                                                                    <option value="@user.user_id">@user.full_name - @user.department</option>
-                                                                }
-                                                            </select>
+                                                    @if (incident.status == "Pending")
+                                                    {
+                                                        <a asp-action="delete" asp-route-Id="@incident.incident_id" class="btn btn-danger btn-sm"
+                                                           onclick="return confirm('Are you sure you want to delete this Incident?');">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+
+                                                        <button type="button" class="btn btn-primary btn-sm"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#assign-@incident.incident_id">
+                                                            <i class="fa-solid fa-paper-plane"></i>
+                                                        </button>
+                                                    }
+                                                    @if (incident.status == "Closed")
+                                                    {
+                                                        <button type="button" class="btn btn-primary btn-sm"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#comments-@incident.incident_id">
+                                                            <i class="fa-solid fa-comment"></i>
+                                                        </button>
+                                                    }
+                                                </td>
+                                            </tr>
+
+                                            <!-- Assign Incident Modal -->
+                                            <div class="modal fade" id="assign-@incident.incident_id" tabindex="-1" aria-labelledby="assignModalLabel-@incident.incident_id" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content shadow-lg">
+                                                        <div class="modal-header bg-primary text-white">
+                                                            <h5 class="modal-title" id="assignModalLabel-@incident.incident_id">
+                                                                <i class="fa-solid fa-user-check"></i> Assign Incident
+                                                            </h5>
+                                                            <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
-                                                        <div class="modal-footer d-flex justify-content-between">
-                                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                                                <i class="fa-solid fa-times"></i> Cancel
-                                                            </button>
-                                                            <button type="submit" class="btn btn-success">
-                                                                <i class="fa-solid fa-paper-plane"></i> Assign Incident
-                                                            </button>
+                                                        <div class="modal-body">
+                                                            <form method="post" asp-action="AssignIncident" asp-route-id="@incident.incident_id">
+                                                                <div class="mb-3">
+                                                                    <label for="assignUser" class="form-label">
+                                                                        <strong><i class="fa-solid fa-users"></i> Select a User</strong>
+                                                                    </label>
+                                                                    <select class="form-select form-control-lg border-primary" name="assignedUserId" required>
+                                                                        <option value="" disabled selected>-- Select a Moderator --</option>
+                                                                        @foreach (var user in users.Where(u => u.role == "moderator"))
+                                                                        {
+                                                                            <option value="@user.user_id">@user.full_name - @user.department</option>
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                                <div class="modal-footer d-flex justify-content-between">
+                                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                                                        <i class="fa-solid fa-times"></i> Cancel
+                                                                    </button>
+                                                                    <button type="submit" class="btn btn-success">
+                                                                        <i class="fa-solid fa-paper-plane"></i> Assign Incident
+                                                                    </button>
+                                                                </div>
+                                                            </form>
                                                         </div>
-                                                    </form>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    <!-- Modal Details -->
-                                    <div class="modal fade" id="incidentModal-@incident.incident_id" tabindex="-1"
-                                         aria-labelledby="modalTitle-@incident.incident_id" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered modal-md">
-                                            <div class="modal-content">
-                                                <div class="modal-header
+                                            <!-- Modal Details -->
+                                            <div class="modal fade" id="incidentModal-@incident.incident_id" tabindex="-1"
+                                                 aria-labelledby="modalTitle-@incident.incident_id" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered modal-md">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header
                                                             @(incident.priority == "Low" ? "bg-success" :
                                                               incident.priority == "Medium" ? "bg-warning" :
                                                               "bg-danger") text-white">
-                                                    <h5 class="modal-title" id="modalTitle-@incident.incident_id">
-                                                        <i class="fas fa-exclamation-triangle"></i> Incident Details
-                                                    </h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <div class="container">
-                                                        <div class="row mb-3">
-                                                            <div class="col-md-6">
-                                                                <p><strong><i class="fas fa-heading"></i> Title:</strong> @incident.tittle</p>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <p><strong><i class="fas fa-tags"></i> Category:</strong> @incident.category</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row mb-3">
-                                                            <div class="col-md-6">
-                                                                <p>
-                                                                    <strong><i class="fas fa-exclamation-circle"></i> Priority:</strong>
-                                                                    <span class="badge
-                                                                                @(incident.priority == "Low" ? "bg-success" :
-                                                                                  incident.priority == "Medium" ? "bg-warning" :
-                                                                                  "bg-danger")">
-                                                                        @incident.priority
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <p><strong><i class="fas fa-calendar-alt"></i> Reported At:</strong> @incident.reported_at.ToString("MMM dd, yyyy")</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row mb-3">
-                                                            <div class="col-md-6">
-                                                                <p>
-                                                                    <strong><i class="fas fa-info-circle"></i> Status:</strong>
-                                                                    <span class="badge
-                                                                                @(@incident.status == "pending" ? "bg-warning" :
-                                                                                  "bg-success")">
-                                                                        @incident.status
-                                                                    </span>
-                                                                </p>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <p>
-                                                                    <strong><i class="fa-solid fa-user-secret"></i> Assign:</strong>
-                                                                    @(item.User != null ? item.User.full_name : "Not Assigned")
-                                                                </p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="row">
-                                                            <div class="col-md-6">
-                                                                <p><strong><i class="fas fa-file-alt"></i> Description:</strong></p>
-                                                            </div>
-                                                            
-                                                            <div class="col-md-6">
-                                                                <p><strong><i class="fa-solid fa-building"></i>Department: </strong>
-                                                                    @(item.User != null ? item.User.department : "Not Assigned")
-                                                                </p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="row">
-                                                            <div class="col-md-12">
-                                                                <div class="border rounded p-3 bg-light">
-                                                                    @incident.description
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row mt-3">
-                                                            <div class="col-md-12">
-                                                                <p><strong><i class="fas fa-paperclip"></i> Attachments:</strong></p>
-                                                                @if (attachments.Any())
-                                                                {
-                                                                    <div class="row">
-                                                                        @foreach (var attachment in attachments)
-                                                                        {
-                                                                            string fileExtension = System.IO.Path.GetExtension(attachment.file_path).ToLower();
-                                                                            bool isImage = fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png" || fileExtension == ".gif";
-
-                                                                            <div class="col-md-4 mb-2">
-                                                                                @if (isImage)
-                                                                                {
-                                                                                    <a href="@attachment.file_path" target="_blank">
-                                                                                        <img src="@attachment.file_path" class="img-fluid img-thumbnail" alt="Attachment Image">
-                                                                                    </a>
-                                                                                }
-                                                                                else
-                                                                                {
-                                                                                    <a href="@attachment.file_path" target="_blank" class="btn btn-outline-primary w-100">
-                                                                                        <i class="fas fa-file-alt"></i> @attachment.file_name
-                                                                                    </a>
-                                                                                }
-                                                                            </div>
-                                                                        }
-                                                                    </div>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <p class="text-muted">No attachments available.</p>
-                                                                }
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                        <i class="fas fa-times"></i> Close
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Modal for Moderator Comments and Attachments -->
-                                    <div class="modal fade" id="comments-@incident.incident_id" tabindex="-1" aria-labelledby="comments-modal-label" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered modal-md">
-                                            <div class="modal-content">
-                                                @if (item.Updates.Any())
-                                                {
-                                                    @foreach (var update in item.Updates)
-                                                    {
-                                                        <div class="modal-header bg-primary text-white">
-                                                            <h5 class="modal-title" id="comments-modal-label">
-                                                                <i class="fas fa-comments"></i> Moderator Review
+                                                            <h5 class="modal-title" id="modalTitle-@incident.incident_id">
+                                                                <i class="fas fa-exclamation-triangle"></i> Incident Details
                                                             </h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
                                                         <div class="modal-body">
                                                             <div class="container">
-                                                                <h6><i class="fas fa-comment-dots"></i> Moderator Comments:</h6>
-                                                                <div class="border rounded p-3 bg-light">
+                                                                <div class="row mb-3">
+                                                                    <div class="col-md-6">
+                                                                        <p><strong><i class="fas fa-heading"></i> Title:</strong> @incident.tittle</p>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <p><strong><i class="fas fa-tags"></i> Category:</strong> @incident.category</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row mb-3">
+                                                                    <div class="col-md-6">
+                                                                        <p>
+                                                                            <strong><i class="fas fa-exclamation-circle"></i> Priority:</strong>
+                                                                            <span class="badge
+                                                                                @(incident.priority == "Low" ? "bg-success" :
+                                                                                  incident.priority == "Medium" ? "bg-warning" :
+                                                                                  "bg-danger")">
+                                                                                @incident.priority
+                                                                            </span>
+                                                                        </p>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <p><strong><i class="fas fa-calendar-alt"></i> Reported At:</strong> @incident.reported_at.ToString("MMM dd, yyyy")</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row mb-3">
+                                                                    <div class="col-md-6">
+                                                                        <p>
+                                                                            <strong><i class="fas fa-info-circle"></i> Status:</strong>
+                                                                            <span class="badge
+                                                                                @(@incident.status == "pending" ? "bg-warning" :
+                                                                                  "bg-success")">
+                                                                                @incident.status
+                                                                            </span>
+                                                                        </p>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <p>
+                                                                            <strong><i class="fa-solid fa-user-secret"></i> Assign:</strong>
+                                                                            @(item.User != null ? item.User.full_name : "Not Assigned")
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
 
-                                                                    <div class="mb-2 p-2 border-bottom">
-                                                                        @* <p class="fw-bold">@update.user_id (Moderator)</p> *@
-                                                                        <p>@update.update_text</p>
-                                                                        <small class="text-muted">@update.updated_at</small>
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <p><strong><i class="fas fa-file-alt"></i> Description:</strong></p>
                                                                     </div>
 
+                                                                    <div class="col-md-6">
+                                                                        <p>
+                                                                            <strong><i class="fa-solid fa-building"></i>Department: </strong>
+                                                                            @(item.User != null ? item.User.department : "Not Assigned")
+                                                                        </p>
+                                                                    </div>
                                                                 </div>
 
-                                                                <hr>
-
-                                                                <h6><i class="fas fa-paperclip"></i> Attachments:</h6>
                                                                 <div class="row">
+                                                                    <div class="col-md-12">
+                                                                        <div class="border rounded p-3 bg-light">
+                                                                            @incident.description
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
+                                                                <div class="row mt-3">
+                                                                    <div class="col-md-12">
+                                                                        <p><strong><i class="fas fa-paperclip"></i> Attachments:</strong></p>
+                                                                        @if (attachments.Any())
+                                                                        {
+                                                                            <div class="row">
+                                                                                @foreach (var attachment in attachments)
+                                                                                {
+                                                                                    string fileExtension = System.IO.Path.GetExtension(attachment.file_path).ToLower();
+                                                                                    bool isImage = fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png" || fileExtension == ".gif";
+
+                                                                                    <div class="col-md-4 mb-2">
+                                                                                        @if (isImage)
+                                                                                        {
+                                                                                            <a href="@attachment.file_path" target="_blank">
+                                                                                                <img src="@attachment.file_path" class="img-fluid img-thumbnail" alt="Attachment Image">
+                                                                                            </a>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <a href="@attachment.file_path" target="_blank" class="btn btn-outline-primary w-100">
+                                                                                                <i class="fas fa-file-alt"></i> @attachment.file_name
+                                                                                            </a>
+                                                                                        }
+                                                                                    </div>
+                                                                                }
+                                                                            </div>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <p class="text-muted">No attachments available.</p>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+
                                                             </div>
                                                         </div>
-                                                        <!-- Modal Footer with Close Report Button -->
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                                                 <i class="fas fa-times"></i> Close
                                                             </button>
                                                         </div>
-                                                    }
-                                                }
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <tr><td colspan="7" class="text-center">No records found</td></tr>
-                            }
-                        </tbody>
-                    </table>
+
+                                            <!-- Modal for Moderator Comments and Attachments -->
+                                            <div class="modal fade" id="comments-@incident.incident_id" tabindex="-1" aria-labelledby="comments-modal-label" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered modal-md">
+                                                    <div class="modal-content">
+                                                        @if (item.Updates.Any())
+                                                        {
+                                                            @foreach (var update in item.Updates)
+                                                            {
+                                                                <div class="modal-header bg-primary text-white">
+                                                                    <h5 class="modal-title" id="comments-modal-label">
+                                                                        <i class="fas fa-comments"></i> Moderator Review
+                                                                    </h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="container">
+                                                                        <h6><i class="fas fa-comment-dots"></i> Moderator Comments:</h6>
+                                                                        <div class="border rounded p-3 bg-light">
+
+                                                                            <div class="mb-2 p-2 border-bottom">
+                                                                                @* <p class="fw-bold">@update.user_id (Moderator)</p> *@
+                                                                                <p>@update.update_text</p>
+                                                                                <small class="text-muted">@update.updated_at</small>
+                                                                            </div>
+
+                                                                        </div>
+
+                                                                        <hr>
+
+                                                                        <h6><i class="fas fa-paperclip"></i> Attachments:</h6>
+                                                                        <div class="row">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- Modal Footer with Close Report Button -->
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                        <i class="fas fa-times"></i> Close
+                                                                    </button>
+                                                                </div>
+                                                            }
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr><td colspan="7" class="text-center">No records found</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -30,7 +30,7 @@ namespace IMS.Models
         [Required]
         public string token { get; set; }
 
-        public string token_forgot { get; set; }
+        public string? token_forgot { get; set; }
 
         public bool isRistrict { get; set; }
 

@@ -60,12 +60,6 @@
                                 <p>Review Reports</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a asp-action="userManagement" class="nav-link">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>User Management</p>
-                            </a>
-                        </li>
                     </ul>
                 </nav>
             </div>
@@ -110,13 +104,17 @@
                                             <tr>
                                                 <td>@incident.tittle</td>
                                                 <td>
-                                                    <span class="badge @(incident.status == "Pending" ? "bg-warning" : "bg-success")">
+                                                    <span class="badge @(incident.status == "In Progress" ? "bg-warning" : "bg-success")">
                                                         @incident.status
                                                     </span>
                                                 </td>
                                                 <td>@incident.reported_at.ToString("MMM dd, yyyy")</td>
                                                 <td>
-                                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewIncidentModal-@incident.incident_id">View</button>
+                                                    <button class="btn btn-sm btn-info"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#viewIncidentModal-@incident.incident_id">
+                                                        <i class="fa-solid fa-eye"></i>View
+                                                    </button>
                                                     @if (@incident.status == "In Progress")
                                                     {
                                                         <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#resolveIncidentModal-@incident.incident_id">Resolve</button>

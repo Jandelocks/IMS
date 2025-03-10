@@ -1,4 +1,5 @@
 using IMS.Data;
+using IMS.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -38,9 +39,13 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Moderator", policy => policy.RequireRole("moderator"));
 });
 
+
 // Add SQL Server database connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register LogService
+builder.Services.AddScoped<LogService>();  
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
