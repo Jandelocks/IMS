@@ -134,39 +134,68 @@
 
                                                             <p><strong>Title:</strong> @incident.tittle</p>
                                                             <p><strong>Description:</strong> @incident.description </p>
+                                                            <p><strong><i class="fas fa-paperclip"></i> Attachments:</strong></p>
+                                                            @if (attachments.Any())
+                                                            {
+                                                                <div class="row">
+                                                                    @foreach (var attachment in attachments)
+                                                                    {
+                                                                        string fileExtension = System.IO.Path.GetExtension(attachment.file_path).ToLower();
+                                                                        bool isImage = fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png" || fileExtension == ".gif";
 
-                                                            <div class="col-md-12">
-                                                                <p><strong><i class="fas fa-paperclip"></i> Attachments:</strong></p>
-                                                                @if (attachments.Any())
+                                                                        <div class="col-md-4 mb-2">
+                                                                            @if (isImage)
+                                                                            {
+                                                                                <a href="@attachment.file_path" target="_blank">
+                                                                                    <img src="@attachment.file_path" class="img-fluid img-thumbnail" alt="Attachment Image">
+                                                                                </a>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <a href="@attachment.file_path" target="_blank" class="btn btn-outline-primary w-100">
+                                                                                    <i class="fas fa-file-alt"></i> @attachment.file_name
+                                                                                </a>
+                                                                            }
+                                                                        </div>
+                                                                    }
+                                                                </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <p class="text-muted">No attachments available.</p>
+                                                            }
+
+                                                            @if (item.Updates.Any())
+                                                            {
+                                                                <hr>
+                                                                <h6><i class="fas fa-comments"></i> Moderator Review</h6>
+                                                                @foreach (var update in item.Updates)
                                                                 {
-                                                                    <div class="row">
-                                                                        @foreach (var attachment in attachments)
-                                                                        {
-                                                                            string fileExtension = System.IO.Path.GetExtension(attachment.file_path).ToLower();
-                                                                            bool isImage = fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png" || fileExtension == ".gif";
-
-                                                                            <div class="col-md-4 mb-2">
-                                                                                @if (isImage)
-                                                                                {
-                                                                                    <a href="@attachment.file_path" target="_blank">
-                                                                                        <img src="@attachment.file_path" class="img-fluid img-thumbnail" alt="Attachment Image">
-                                                                                    </a>
-                                                                                }
-                                                                                else
-                                                                                {
-                                                                                    <a href="@attachment.file_path" target="_blank" class="btn btn-outline-primary w-100">
-                                                                                        <i class="fas fa-file-alt"></i> @attachment.file_name
-                                                                                    </a>
-                                                                                }
-                                                                            </div>
-                                                                        }
+                                                                    <div class="border rounded p-3 bg-light mb-2">
+                                                                        <p>@update.update_text</p>
+                                                                        <small class="text-muted">@(update.updated_at?.ToString("MMM dd, yyyy") ?? "N/A")</small>
                                                                     </div>
+                                                                    <h6><i class="fas fa-paperclip"></i> Attachments:</h6>
+                                                                    @if (update.attachments != null && update.attachments.Any())
+                                                                    {
+                                                                        <div class="mb-2">
+                                                                            <a href="@update.attachments" download class="btn btn-link">
+                                                                                <i class="fas fa-file"></i> @update.attachments
+                                                                            </a>
+                                                                        </div>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="text-muted">No attachments available.</p>
+                                                                    }
                                                                 }
-                                                                else
-                                                                {
-                                                                    <p class="text-muted">No attachments available.</p>
-                                                                }
-                                                            </div>
+                                                            }
+                                                        </div>
+                                                        <div class="modal-footer">
+
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                <i class="fas fa-times"></i> Close
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>

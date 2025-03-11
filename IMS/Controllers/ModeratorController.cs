@@ -43,15 +43,21 @@ namespace IMS.Controllers
                                           .Where(i => i.assigned_too == userId)
                                           .Where(i => i.status != "Closed")
                                           .ToListAsync();
-             
+
+            var updates = await _context.updates
+                                      .Where(u => incidents.Select(i => i.incident_id).Contains(u.incident_id))
+                                      .ToListAsync();
+
             var attachments = await _context.attachments.ToListAsync();
+
             var users = await _context.users.ToListAsync(); // Fetch all users
             // Combine incidents and only fetch attachments that match the incident_id
             var incidentList = incidents.Select(i => new IncidentViewModel
             {
                 Incident = i,
                 Attachments = attachments.Where(a => a.incident_id == i.incident_id).ToList(),
-                User = users.FirstOrDefault(u => u.user_id == i.user_id)
+                User = users.FirstOrDefault(u => u.user_id == i.user_id),
+                Updates = updates.Where(u => u.incident_id == i.incident_id).ToList()
             }).ToList();
 
             return View("manageIncidents", incidentList);

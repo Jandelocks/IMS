@@ -210,8 +210,8 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> usersLogs()
         {
-            var categories = await _context.logs.ToListAsync();
-            return View("Logs", categories);
+            var logs = await _context.logs.ToListAsync();
+            return View("Logsreport", logs);
         }
     }
 }

@@ -31,12 +31,20 @@ namespace IMS.Data
                 .HasForeignKey(u => u.user_id)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Updates - Incidents
-            modelBuilder.Entity<UpdatesModel>()
-                .HasOne(u => u.Incident)
-                .WithMany()
+            //// Updates - Incidents
+            //modelBuilder.Entity<UpdatesModel>()
+            //    .HasOne(u => u.Incident)
+            //    .WithMany()
+            //    .HasForeignKey(u => u.incident_id)
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            // Updates - Incidents (One-to-Many)
+            modelBuilder.Entity<IncidentsModel>()
+                .HasMany(i => i.Updates)
+                .WithOne(u => u.Incident)
                 .HasForeignKey(u => u.incident_id)
                 .OnDelete(DeleteBehavior.Cascade);
+
 
             // Comments - Users
             modelBuilder.Entity<CommentsModel>()

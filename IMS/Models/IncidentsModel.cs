@@ -39,6 +39,8 @@ namespace IMS.Models
         public DateTime? updated_at { get; set; }
 
         // Navigation property
-        public virtual UsersModel User { get; set; }    
+        public virtual UsersModel User { get; set; }
+        public virtual ICollection<UpdatesModel> Updates { get; set; } = new List<UpdatesModel>();
+
     }
 }

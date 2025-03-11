@@ -15,6 +15,9 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -114,28 +117,20 @@
                                                         <button type="button" class="btn btn-primary btn-sm"
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#incidentModal-@incident.incident_id">
-                                                            <i class="fas fa-eye"></i>
+                                                            <i class="fas fa-eye"></i>View details
                                                         </button>
-                                                        @if (incident.status == "Closed")
-                                                        {
-                                                            <button type="button" class="btn btn-primary btn-sm"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#comments-@incident.incident_id">
-                                                                <i class="fa-solid fa-comment"></i>
-                                                            </button>
-                                                        }
                                                     </td>
                                                 </tr>
 
-                                                <!-- Modal -->
+                                                <!-- Combined Modal for Incident Details and Moderator Comments -->
                                                 <div class="modal fade" id="incidentModal-@incident.incident_id" tabindex="-1"
                                                      aria-labelledby="modalTitle-@incident.incident_id" aria-hidden="true">
                                                     <div class="modal-dialog modal-dialog-centered modal-md">
                                                         <div class="modal-content">
                                                             <div class="modal-header
-                                                            @(incident.priority == "Low" ? "bg-success" :
-                                                              incident.priority == "Medium" ? "bg-warning" :
-                                                              "bg-danger") text-white">
+                                                                @(incident.priority == "Low" ? "bg-success" :
+                                                                  incident.priority == "Medium" ? "bg-warning" :
+                                                                  "bg-danger") text-white">
                                                                 <h5 class="modal-title" id="modalTitle-@incident.incident_id">
                                                                     <i class="fas fa-exclamation-triangle"></i> Incident Details
                                                                 </h5>
@@ -156,9 +151,9 @@
                                                                             <p>
                                                                                 <strong><i class="fas fa-exclamation-circle"></i> Priority:</strong>
                                                                                 <span class="badge
-                                                                                @(incident.priority == "Low" ? "bg-success" :
-                                                                                  incident.priority == "Medium" ? "bg-warning" :
-                                                                                  "bg-danger")">
+                                                                                    @(incident.priority == "Low" ? "bg-success" :
+                                                                                      incident.priority == "Medium" ? "bg-warning" :
+                                                                                      "bg-danger")">
                                                                                     @incident.priority
                                                                                 </span>
                                                                             </p>
@@ -172,8 +167,8 @@
                                                                             <p>
                                                                                 <strong><i class="fas fa-info-circle"></i> Status:</strong>
                                                                                 <span class="badge
-                                                                                @(@incident.status == "Pending" ? "bg-warning" :
-                                                                                  "bg-success")">
+                                                                                    @(@incident.status == "Pending" ? "bg-warning" :
+                                                                                      "bg-success")">
                                                                                     @incident.status
                                                                                 </span>
                                                                             </p>
@@ -187,6 +182,7 @@
                                                                             </div>
                                                                         </div>
                                                                     </div>
+
                                                                     <div class="row mt-3">
                                                                         <div class="col-md-12">
                                                                             <p><strong><i class="fas fa-paperclip"></i> Attachments:</strong></p>
@@ -207,7 +203,7 @@
                                                                                             }
                                                                                             else
                                                                                             {
-                                                                                                <a href="@attachment.file_path" target="_blank" class="btn btn-outline-primary w-100">
+                                                                                                <a href="@attachment.file_path" download class="btn btn-outline-primary w-100">
                                                                                                     <i class="fas fa-file-alt"></i> @attachment.file_name
                                                                                                 </a>
                                                                                             }
@@ -221,46 +217,22 @@
                                                                             }
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                                    <i class="fas fa-times"></i> Close
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
 
-                                                <!-- Modal for Moderator Comments and Attachments -->
-                                                <div class="modal fade" id="comments-@incident.incident_id" tabindex="-1" aria-labelledby="comments-modal-label" aria-hidden="true">
-                                                    <div class="modal-dialog modal-dialog-centered modal-md">
-                                                        <div class="modal-content">
-                                                            @if (item.Updates.Any())
-                                                            {
-                                                                @foreach (var update in item.Updates)
-                                                                {
-                                                                    <div class="modal-header bg-primary text-white">
-                                                                        <h5 class="modal-title" id="comments-modal-label">
-                                                                            <i class="fas fa-comments"></i> Moderator Review
-                                                                        </h5>
-                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                    </div>
-                                                                    <div class="modal-body">
-                                                                        <div class="container">
-                                                                            <h6><i class="fas fa-comment-dots"></i> Moderator Comments:</h6>
-                                                                            <div class="border rounded p-3 bg-light">
-                                                                                <div class="mb-2 p-2 border-bottom">
-                                                                                    <p>@update.update_text</p>
-                                                                                    <small class="text-muted">@(update.updated_at?.ToString("MMM dd, yyyy") ?? "N/A")</small>
-                                                                                </div>
+                                                                    @if (item.Updates.Any())
+                                                                    {
+                                                                        <hr>
+                                                                        <h6><i class="fas fa-comments"></i> Moderator Review</h6>
+                                                                        @foreach (var update in item.Updates)
+                                                                        {
+                                                                            <div class="border rounded p-3 bg-light mb-2">
+                                                                                <p>@update.update_text</p>
+                                                                                <small class="text-muted">@(update.updated_at?.ToString("MMM dd, yyyy") ?? "N/A")</small>
                                                                             </div>
-                                                                            <hr>
                                                                             <h6><i class="fas fa-paperclip"></i> Attachments:</h6>
                                                                             @if (update.attachments != null && update.attachments.Any())
                                                                             {
-                                                                                <div class="col-md-12 mb-2">
-                                                                                    <a href="@update.attachments" target="_blank" class="btn btn-link">
+                                                                                <div class="mb-2">
+                                                                                    <a href="@update.attachments" download class="btn btn-link">
                                                                                         <i class="fas fa-file"></i> @update.attachments
                                                                                     </a>
                                                                                 </div>
@@ -269,16 +241,18 @@
                                                                             {
                                                                                 <p class="text-muted">No attachments available.</p>
                                                                             }
-                                                                        </div>
-                                                                    </div>
-                                                                    <!-- Modal Footer with Close Report Button -->
-                                                                    <div class="modal-footer">
-                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                                            <i class="fas fa-times"></i> Close
-                                                                        </button>
-                                                                    </div>
-                                                                }
-                                                            }
+                                                                        }
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <a asp-controller="reports" asp-action="downloadincidentreport" asp-route-incidentId="@incident.incident_id" class="btn btn-primary">
+                                                                    <i class="fa fa-download"></i> Download Report
+                                                                </a>
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                    <i class="fas fa-times"></i> Close
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -290,45 +264,6 @@
                                         }
                                     </tbody>
                                 </table>
-
-
-                                <!-- Comment Modal -->
-                                <div class="modal fade" id="commentsModal-001" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered modal-md">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-primary text-white">
-                                                <h5 class="modal-title" id="commentsModalLabel">
-                                                    <i class="fas fa-comments"></i> Moderator Review
-                                                </h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="container">
-                                                    <h6><i class="fas fa-comment-dots"></i> Moderator Comments:</h6>
-                                                    <div class="border rounded p-3 bg-light">
-                                                        <div class="mb-2 p-2 border-bottom">
-                                                            <p>System has been fully restored and no further issues detected.</p>
-                                                            <small class="text-muted">2025-03-02 10:15</small>
-                                                        </div>
-                                                    </div>
-                                                    <hr>
-                                                    <h6><i class="fas fa-paperclip"></i> Attachments:</h6>
-                                                    <p class="text-muted">No attachments available.</p>
-                                                    <hr>
-                                                    <h6><i class="fas fa-plus-circle"></i> Add Comment:</h6>
-                                                    <form>
-                                                        <div class="mb-3">
-                                                            <textarea class="form-control" placeholder="Enter your comment..."></textarea>
-                                                        </div>
-                                                        <button type="submit" class="btn btn-primary">
-                                                            <i class="fas fa-paper-plane"></i> Submit
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>

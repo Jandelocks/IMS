@@ -39,6 +39,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Moderator", policy => policy.RequireRole("moderator"));
 });
 
+//Reports
+builder.Services.AddScoped<ReportService>();
 
 // Add SQL Server database connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
