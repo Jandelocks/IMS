@@ -1,0 +1,250 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>IMS - Moderator Dashboard</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        .card-title {
+        font-weight: bold;
+        }
+
+        .profile-user-img {
+        width: 120px;
+        height: 120px;
+        border: 3px solid #007bff;
+        object-fit: cover;
+        cursor: pointer;
+        }
+
+        .btn-primary {
+        width: 100%;
+        }
+
+        #profile-pic {
+        display: none;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-light bg-light border-bottom">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-user"></i> Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-danger" asp-controller="login" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="#" class="brand-link text-center">
+                <span class="brand-text font-weight-bold">
+                    IMS -
+                    @if (User.IsInRole("admin"))
+                    {
+                        <text>Admin</text>
+                    }
+                    else if (User.IsInRole("moderator"))
+                    {
+                        <text>Moderator</text>
+                    }
+                    else
+                    {
+                        <text>User</text>
+                    }
+                </span>
+            </a>
+
+            <div class="sidebar">
+                @if (User.IsInRole("moderator"))
+                {
+                    <nav class="mt-2">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                            <li class="nav-item">
+                                <a asp-controller="moderator" asp-action="" class="nav-link">
+                                    <i class="nav-icon fas fa-tachometer-alt"></i>
+                                    <p>Dashboard</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a asp-controller="moderator" asp-action="manageIncidents" class="nav-link">
+                                    <i class="nav-icon fas fa-exclamation-triangle"></i>
+                                    <p>Incident Management</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a asp-controller="moderator" asp-action="reviewReports" class="nav-link">
+                                    <i class="nav-icon fas fa-file-alt"></i>
+                                    <p>Review Reports</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+                @if(User.IsInRole("admin"))
+                {
+                    <nav class="mt-2">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                            <li class="nav-item">
+                                <a asp-controller="admin" asp-action="" class="nav-link">
+                                    <i class="nav-icon fas fa-tachometer-alt"></i>
+                                    <p>Dashboard</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a asp-controller="admin" asp-action="incidents" class="nav-link">
+                                    <i class="nav-icon fas fa-exclamation-triangle"></i>
+                                    <p>Incidents</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a asp-controller="admin" asp-action="users" class="nav-link">
+                                    <i class="nav-icon fas fa-users"></i>
+                                    <p>Users</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a asp-controller="admin" asp-action="categories" class="nav-link">
+                                    <i class="fa-solid fa-list"></i>
+                                    <p>Categories</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a asp-controller="admin" asp-action="userslogs" class="nav-link">
+                                    <i class="fas fa-clipboard-list"></i>
+                                    <p>Logs</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+                @if(User.IsInRole("user"))
+                {
+                    <nav class="mt-2">
+                        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                            <li class="nav-item">
+                                <a asp-controller="user" asp-action="dashboard" class="nav-link">
+                                    <i class="nav-icon fas fa-tachometer-alt"></i>
+                                    <p>Dashboard</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a asp-controller="user" asp-action="" class="nav-link">
+                                    <i class="nav-icon fas fa-file-alt"></i>
+                                    <p>Submit Report</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a asp-controller="user" asp-action="reports" class="nav-link">
+                                    <i class="nav-icon fas fa-file-alt"></i>
+                                    <p>Reports</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a asp-controller="user" asp-action="Closed" class="nav-link">
+                                    <i class="nav-icon fa-solid fa-clipboard-check"></i>
+                                    <p>Closed Cases</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0 fw-bold">Moderator Dashboard</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content">
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card card-primary card-outline">
+                                    <div class="card-body box-profile text-center">
+                                        @* <img id="profile-preview" class="profile-user-img img-fluid img-circle" src="https://via.placeholder.com/150" alt="User profile picture" onclick="document.getElementById('profile-pic').click();"> *@
+                                        <img src="#" alt="Alternate Text" id="profile-preview" class="profile-user-img img-fluid img-circle" data-toggle="tooltip" data-placement="top" title="Select image" onclick="document.getElementById('profile-pic').click();">
+                                        <h3 class="profile-username">Jandel L. Escalera</h3>
+                                        <p class="text-muted">IT Specialist</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-8">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-primary text-white">
+                                        <h3 class="card-title"><i class="fas fa-user-edit"></i> Edit Profile</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <form action="#" method="POST">
+                                            <div class="form-group">
+                                                <label for="name"><i class="fas fa-user"></i> Full Name</label>
+                                                <input type="text" class="form-control" id="name" value="Jandel L. Escalera" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                                                <input type="email" class="form-control" id="email" value="jandel@example.com" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="password"><i class="fas fa-lock"></i> New Password</label>
+                                                <input type="password" class="form-control" id="password" placeholder="Enter new password">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="confirm-password"><i class="fas fa-lock"></i> Confirm Password</label>
+                                                <input type="password" class="form-control" id="confirm-password" placeholder="Confirm new password">
+                                            </div>
+                                            <input type="file" id="profile-pic" accept="image/*" onchange="previewImage(event)">
+                                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Profile</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.1/dist/js/adminlte.min.js"></script>
+    <script>
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document.getElementById('profile-preview');
+                output.src = reader.result;
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+</body>
+</html>

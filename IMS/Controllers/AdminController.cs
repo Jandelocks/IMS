@@ -210,7 +210,7 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> usersLogs()
         {
-            var logs = await _context.logs.ToListAsync();
+            var logs = await _context.logs.OrderByDescending(l => l.log_id).ToListAsync();
             return View("Logsreport", logs);
         }
     }
