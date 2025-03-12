@@ -43,8 +43,8 @@ namespace IMS.Controllers
             var user = _context.users.FirstOrDefault(u => u.email == email);
             if (user == null)
             {
-                ViewBag.ErrorMessage = "Email not found.";
-                return View();
+                TempData["ErrorMessage"] = "Email not found.";
+                return RedirectToAction("Forgotpassword");
             }
 
             // Generate reset token
@@ -59,12 +59,12 @@ namespace IMS.Controllers
             bool emailSent = SendEmail(user.email, "Password Reset", emailBody);
             if (!emailSent)
             {
-                ViewBag.ErrorMessage = "Failed to send reset email.";
-                return View();
+                TempData["ErrorMessage"] = "Failed to send reset email.";
+                return RedirectToAction("Forgotpassword");
             }
 
-            ViewBag.SuccessMessage = "A reset link has been sent to your email.";
-            return View();
+            TempData["SuccessMessage"] = "A reset link has been sent to your email.";
+            return RedirectToAction("Forgotpassword");
         }
 
         public IActionResult ResetPassword(string token)
@@ -72,7 +72,8 @@ namespace IMS.Controllers
             var user = _context.users.FirstOrDefault(u => u.token_forgot == token);
             if (user == null)
             {
-                return BadRequest("Invalid or expired token.");
+                TempData["ErrorMessage"] = "Invalid or expired token.";
+                return RedirectToAction("Forgotpassword");
             }
 
             ViewBag.Token = token;
@@ -85,16 +86,17 @@ namespace IMS.Controllers
             var user = _context.users.FirstOrDefault(u => u.token_forgot == token);
             if (user == null)
             {
-                return BadRequest("Invalid or expired token.");
+                TempData["ErrorMessage"] = "Invalid or expired token.";
+                return RedirectToAction("Forgotpassword");
             }
 
             user.password = BCrypt.Net.BCrypt.HashPassword(newPassword);
             user.token_forgot = null; // Clear token after reset
             await _context.SaveChangesAsync();
 
-            ViewBag.SuccessMessage = "Password reset successful. You can now log in.";
+            TempData["SuccessMessage"] = "Password reset successful. You can now log in.";
             _logService.AddLog(user.user_id, "Update password");
-            return View("Login");
+            return RedirectToAction("Index");
         }
 
         private bool SendEmail(string toEmail, string subject, string body)
@@ -163,7 +165,7 @@ namespace IMS.Controllers
 
             _context.users.Add(newUser);
             await _context.SaveChangesAsync();
-
+            TempData["SuccessMessage"] = "You can now Signup";
             return RedirectToAction("");
         }
 
@@ -175,18 +177,15 @@ namespace IMS.Controllers
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.password))
             {
-                ViewBag.ErrorMessage = "Invalid email or password.";
-                return View("Login");
+                TempData["ErrorMessage"] = "Invalid email or password.";
+                return RedirectToAction("index");
             }
 
             if (user.isRistrict)
             {
-                ViewBag.ErrorMessage = "You do not have permission to log in.";
-                return View("Login");
+                TempData["ErrorMessage"] = "You do not have permission to log in.";
+                return RedirectToAction("index");
             }
-
-            // Debugging: Print user details
-            Console.WriteLine($"Logging in: {user.full_name}, Role: {user.role}");
 
             // Create Claims for authentication
             var claims = new List<Claim>
@@ -200,12 +199,6 @@ namespace IMS.Controllers
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var authProperties = new AuthenticationProperties { IsPersistent = true };
 
-            // Debugging: Log claims before signing in
-            foreach (var claim in claims)
-            {
-                Console.WriteLine($"Claim: {claim.Type} = {claim.Value}");
-            }
-
             // Sign in user
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
@@ -213,11 +206,9 @@ namespace IMS.Controllers
                 authProperties
             );
 
-            // Debugging: Verify if user is logged in
-            Console.WriteLine("User successfully signed in.");
-
             HttpContext.Session.SetInt32("UserId", user.user_id);
             HttpContext.Session.SetString("Token", user.token);
+
             // Redirect based on role
             if (user.isRistrict == false)
             {
@@ -238,13 +229,14 @@ namespace IMS.Controllers
             }
             else
             {
-                ViewBag.ErrorMessage = "You dont have Permission to Login";
-                return View("Login");
+                TempData["ErrorMessage"] = "You dont have Permission to Login";
+                return RedirectToAction("index");
             }
         }
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+              HttpContext.Session.Clear();
             return Redirect("/login");
         }
     }

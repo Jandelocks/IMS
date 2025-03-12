@@ -24,6 +24,8 @@ namespace IMS.Models
 
         public string department { get; set; }
 
+        public string? profile { get; set; }
+
         [Required]
         public DateTime created_at { get; set; }
 

@@ -5,18 +5,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>IMS - Incident Management System</title>
-
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - IMS</title>
 
     <!-- AdminLTE CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+    <!-- jQuery (Must be before DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <!-- DataTables JS (Must be after jQuery) -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <!-- AdminLTE JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -32,12 +43,12 @@
                     <a href="#" class="nav-link">Reports</a>
                 </li>
             </ul>
-            <ul class="navbar-nav ml-auto">
+            <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-user"></i> Profile</a>
+                    <a asp-controller="profile" asp-action="" class="nav-link"><i class="fas fa-user"></i> Profile</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="login" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    <a class="nav-link text-danger" asp-controller="login" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </li>
             </ul>
         </nav>
@@ -45,7 +56,21 @@
         <!-- Sidebar -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <a href="#" class="brand-link text-center">
-                <span class="brand-text font-weight-light">IMS</span>
+                <span class="brand-text font-weight-bold">
+                    IMS -
+                    @if (User.IsInRole("admin"))
+                    {
+                        <text>Admin</text>
+                    }
+                    else if (User.IsInRole("moderator"))
+                    {
+                        <text>Moderator</text>
+                    }
+                    else
+                    {
+                        <text>User</text>
+                    }
+                </span>
             </a>
             <div class="sidebar">
                 <nav class="mt-2">
@@ -99,7 +124,7 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table id="incidentTable" class="table table-bordered table-striped">
+                                <table id="incidenttbl" class="table table-bordered table-striped datatable">
                                     <thead class="table-dark">
                                         <tr>
                                             <th>Title</th>
@@ -311,10 +336,10 @@
                                                 </div>
                                             }
                                         }
-                                        else
-                                        {
-                                            <tr><td colspan="7" class="text-center">No records found</td></tr>
-                                        }
+                                        @* else *@
+                                        @* { *@
+                                        @*     <tr><td colspan="7" class="text-center">No records found</td></tr> *@
+                                        @* } *@
                                     </tbody>
 
                                 </table>
@@ -327,11 +352,29 @@
         </div>
     </div>
 
-    <!-- jQuery -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+    <script>
+        jQuery.noConflict();
+        jQuery(document).ready(function ($) {
+            console.log("Document is ready. Initializing DataTable...");
 
-    <!-- Bootstrap and AdminLTE JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+            if ($.fn.DataTable) {
+                $('#incidenttbl').DataTable({
+                    "paging": true,  // Enable pagination
+                    "lengthMenu": [10, 25, 50, 60], // Page length options
+                    "ordering": true, // Enable sorting
+                    "info": true, // Show table info
+                    "searching": true, // Enable search bar
+                    "language": {
+                        "paginate": {
+                            "previous": "<i class='fas fa-chevron-left'></i>",
+                            "next": "<i class='fas fa-chevron-right'></i>"
+                        }
+                    }
+                });
+            } else {
+                console.error("DataTable is not defined. Check if DataTables JS is loaded properly.");
+            }
+        });
+    </script>
 </body>
 </html>

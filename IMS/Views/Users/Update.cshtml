@@ -31,12 +31,12 @@
                     <a href="#" class="nav-link">Update</a>
                 </li>
             </ul>
-            <ul class="navbar-nav ml-auto">
+            <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-user"></i> Profile</a>
+                    <a asp-controller="profile" asp-action="" class="nav-link"><i class="fas fa-user"></i> Profile</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="login" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    <a class="nav-link text-danger" asp-controller="login" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </li>
             </ul>
         </nav>
@@ -44,7 +44,21 @@
         <!-- Sidebar -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <a href="#" class="brand-link text-center">
-                <span class="brand-text font-weight-light">IMS</span>
+                <span class="brand-text font-weight-bold">
+                    IMS -
+                    @if (User.IsInRole("admin"))
+                    {
+                        <text>Admin</text>
+                    }
+                    else if (User.IsInRole("moderator"))
+                    {
+                        <text>Moderator</text>
+                    }
+                    else
+                    {
+                        <text>User</text>
+                    }
+                </span>
             </a>
             <div class="sidebar">
                 <nav class="mt-2">

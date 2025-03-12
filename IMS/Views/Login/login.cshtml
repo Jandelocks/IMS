@@ -22,12 +22,16 @@
                     <i class="fas fa-shield-alt fa-3x text-primary"></i>
                     <h3 class="mt-2">Incident Management</h3>
                 </div>
-                @if (ViewBag.ErrorMessage != null)
+
+                @if (TempData["ErrorMessage"] != null)
                 {
-                    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+                    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
                 }
 
-
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                }
                 <form method="post" asp-action="signup">
                     <div class="input-group mb-3">
                         <input type="email" name="email" class="form-control" placeholder="Email" required>

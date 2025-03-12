@@ -270,6 +270,9 @@ namespace IMS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("profile")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

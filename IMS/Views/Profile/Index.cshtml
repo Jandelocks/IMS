@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@model UsersModel;
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -47,7 +48,7 @@
             </ul>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-user"></i> Profile</a>
+                    <a asp-controller="profile" asp-action="" class="nav-link"><i class="fas fa-user"></i> Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-danger" asp-controller="login" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -143,25 +144,25 @@
                     <nav class="mt-2">
                         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
                             <li class="nav-item">
-                                <a asp-controller="user" asp-action="dashboard" class="nav-link">
+                                <a asp-controller="users" asp-action="dashboard" class="nav-link">
                                     <i class="nav-icon fas fa-tachometer-alt"></i>
                                     <p>Dashboard</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a asp-controller="user" asp-action="" class="nav-link">
+                                <a asp-controller="users" asp-action="" class="nav-link">
                                     <i class="nav-icon fas fa-file-alt"></i>
                                     <p>Submit Report</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a asp-controller="user" asp-action="reports" class="nav-link">
+                                <a asp-controller="users" asp-action="reports" class="nav-link">
                                     <i class="nav-icon fas fa-file-alt"></i>
                                     <p>Reports</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a asp-controller="user" asp-action="Closed" class="nav-link">
+                                <a asp-controller="users" asp-action="Closed" class="nav-link">
                                     <i class="nav-icon fa-solid fa-clipboard-check"></i>
                                     <p>Closed Cases</p>
                                 </a>
@@ -191,37 +192,51 @@
                                 <div class="card card-primary card-outline">
                                     <div class="card-body box-profile text-center">
                                         @* <img id="profile-preview" class="profile-user-img img-fluid img-circle" src="https://via.placeholder.com/150" alt="User profile picture" onclick="document.getElementById('profile-pic').click();"> *@
-                                        <img src="#" alt="Alternate Text" id="profile-preview" class="profile-user-img img-fluid img-circle" data-toggle="tooltip" data-placement="top" title="Select image" onclick="document.getElementById('profile-pic').click();">
+                                        <img src="@Url.Content(Model.profile)" alt="Profile" id="profile-preview" class="profile-user-img img-fluid img-circle" data-toggle="tooltip" data-placement="top" title="Select image" onclick="document.getElementById('profile-pic').click();">
                                         <h3 class="profile-username">Jandel L. Escalera</h3>
-                                        <p class="text-muted">IT Specialist</p>
+                                        <p class="text-muted">@Model.role.ToUpper()</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="col-md-8">
                                 <div class="card shadow-sm">
+                                    
                                     <div class="card-header bg-primary text-white">
                                         <h3 class="card-title"><i class="fas fa-user-edit"></i> Edit Profile</h3>
                                     </div>
+                                    
                                     <div class="card-body">
-                                        <form action="#" method="POST">
+                                        @if (TempData["ErrorMessage"] != null)
+                                        {
+                                            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                                        }
+
+                                        @if (TempData["SuccessMessage"] != null)
+                                        {
+                                            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                                        }
+                                        <form asp-action="Updateprofile" method="post" enctype="multipart/form-data">
                                             <div class="form-group">
                                                 <label for="name"><i class="fas fa-user"></i> Full Name</label>
-                                                <input type="text" class="form-control" id="name" value="Jandel L. Escalera" required>
+                                                <input type="hidden" name="Id" value="@Model.user_id">
+                                                <input type="text" class="form-control" name="name" value="@Model.full_name" required>
                                             </div>
                                             <div class="form-group">
                                                 <label for="email"><i class="fas fa-envelope"></i> Email</label>
-                                                <input type="email" class="form-control" id="email" value="jandel@example.com" required>
+                                                <input type="email" class="form-control" name="email" value="@Model.email" required>
                                             </div>
                                             <div class="form-group">
                                                 <label for="password"><i class="fas fa-lock"></i> New Password</label>
-                                                <input type="password" class="form-control" id="password" placeholder="Enter new password">
+                                                <input type="password" class="form-control" name="password" placeholder="Enter new password">
                                             </div>
                                             <div class="form-group">
                                                 <label for="confirm-password"><i class="fas fa-lock"></i> Confirm Password</label>
-                                                <input type="password" class="form-control" id="confirm-password" placeholder="Confirm new password">
+                                                <input type="password" class="form-control" name="confirmpassword" placeholder="Confirm new password">
                                             </div>
-                                            <input type="file" id="profile-pic" accept="image/*" onchange="previewImage(event)">
+                                            <div class="form-group">
+                                                <input type="file" id="profile-pic" name="profilepic" accept="image/*" onchange="previewImage(event)" hidden>
+                                            </div>
                                             <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Profile</button>
                                         </form>
                                     </div>
@@ -237,14 +252,16 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.1/dist/js/adminlte.min.js"></script>
     <script>
+
         function previewImage(event) {
             var reader = new FileReader();
-            reader.onload = function() {
-                var output = document.getElementById('profile-preview');
+            reader.onload = function () {
+                var output = document.getElementById("profile-preview");
                 output.src = reader.result;
-            }
+            };
             reader.readAsDataURL(event.target.files[0]);
         }
     </script>
+
 </body>
 </html>
