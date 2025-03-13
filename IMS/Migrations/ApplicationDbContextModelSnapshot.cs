@@ -119,6 +119,33 @@ namespace IMS.Migrations
                     b.ToTable("comments");
                 });
 
+            modelBuilder.Entity("IMS.Models.DepartmentsModel", b =>
+                {
+                    b.Property<int>("department_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("department_id"));
+
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("department")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("token")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("department_id");
+
+                    b.ToTable("departments");
+                });
+
             modelBuilder.Entity("IMS.Models.IncidentsModel", b =>
                 {
                     b.Property<int>("incident_id")

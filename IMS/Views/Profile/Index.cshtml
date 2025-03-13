@@ -193,7 +193,7 @@
                                     <div class="card-body box-profile text-center">
                                         @* <img id="profile-preview" class="profile-user-img img-fluid img-circle" src="https://via.placeholder.com/150" alt="User profile picture" onclick="document.getElementById('profile-pic').click();"> *@
                                         <img src="@Url.Content(Model.profile)" alt="Profile" id="profile-preview" class="profile-user-img img-fluid img-circle" data-toggle="tooltip" data-placement="top" title="Select image" onclick="document.getElementById('profile-pic').click();">
-                                        <h3 class="profile-username">Jandel L. Escalera</h3>
+                                        <h3 class="profile-username">@Model.full_name</h3>
                                         <p class="text-muted">@Model.role.ToUpper()</p>
                                     </div>
                                 </div>

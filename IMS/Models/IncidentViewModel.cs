@@ -9,5 +9,8 @@
         public IncidentsModel Incident { get; internal set; }
         public List<UpdatesModel> Updates { get; set; } = new();
         public List<CategoriesModel> Categories { get; set; }
+
+        public DepartmentsModel Departments { get; set; }
+        public List<DepartmentsModel> Department { get; set; } = new(); 
     }
 }

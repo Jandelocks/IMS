@@ -69,7 +69,14 @@ namespace IMS.Controllers
         public async Task<IActionResult> users()
         {
             var Users = await _context.users.Where(i => i.role != "admin").ToListAsync();
-            return View("users", Users);
+            var Departments = await _context.departments.ToListAsync();
+
+            var viewModel = new IncidentViewModel
+            {
+                Users = Users,
+                Department = Departments
+            };
+            return View("users", viewModel);
         }
 
         // POST: Restrict User
@@ -211,7 +218,101 @@ namespace IMS.Controllers
         public async Task<IActionResult> usersLogs()
         {
             var logs = await _context.logs.OrderByDescending(l => l.log_id).ToListAsync();
-            return View("Logsreport", logs);
+            return View("logs", logs);
+        }
+
+        public async Task<IActionResult> Department()
+        {
+            var department = await _context.departments.ToListAsync();
+            return View("Department",department);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddDepartment(string department_name, string department_desc, IFormFile image)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            string imagePath = null;
+
+            if (image != null && image.Length > 0)
+            {
+                var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/departments");
+                var filePath = Path.Combine(uploads, image.FileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+                imagePath = "/departments/" + image.FileName;
+            }
+
+            var newDepartment = new DepartmentsModel
+            {
+                department = department_name,
+                description = department_desc,
+                ImagePath = imagePath
+            };
+
+            _context.departments.Add(newDepartment);
+            await _context.SaveChangesAsync();
+            _logService.AddLog((int)userId, $"Add new department: {department_name}");
+            return RedirectToAction("Department");
+        }
+
+
+        [HttpGet]
+        public IActionResult DeleteDepartment(int Id)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            var dep = _context.departments.Find(Id);
+            if (dep == null)
+            {
+                return NotFound();
+            }
+            _context.departments.Remove(dep);
+            _context.SaveChanges();
+            _logService.AddLog((int)userId, $"Deleted department: {dep.department}");
+            return RedirectToAction("Department");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditDepartment(int id, string department_name, string department_desc, IFormFile image)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            var department = await _context.departments.FindAsync(id);
+            if (department == null)
+            {
+                return Content("no");
+            }
+
+            string imagePath = department.ImagePath;
+
+            if (image != null && image.Length > 0)
+            {
+                // Delete the old image if it exists
+                if (!string.IsNullOrEmpty(department.ImagePath))
+                {
+                    var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", department.ImagePath.TrimStart('/'));
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+
+                // Save the new image
+                var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/departments");
+                var filePath = Path.Combine(uploads, image.FileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+                imagePath = "/departments/" + image.FileName;
+            }
+
+            department.department = department_name;
+            department.description = department_desc;
+            department.ImagePath = imagePath;
+            await _context.SaveChangesAsync();
+            _logService.AddLog((int)userId, $"Update department: {department_name}");
+            return RedirectToAction("Department");
         }
     }
 }

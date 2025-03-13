@@ -239,5 +239,45 @@ namespace IMS.Controllers
               HttpContext.Session.Clear();
             return Redirect("/login");
         }
+
+        public async Task<IActionResult> adminnewuser(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Invalid Input.";
+                return Redirect(Request.Headers["Referer"].ToString());
+            }
+
+            // Check if email is already taken
+            if (_context.users.Any(u => u.email == model.email))
+            {
+                TempData["ErrorMessage"] = "Email Already Exist";
+                return RedirectToAction("users", "Admin");
+            }
+
+            // Hash password
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.password);
+
+            // Generate a secure tok,en
+            var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+            // Create new user
+            var newUser = new UsersModel
+            {
+                full_name = model.full_name,
+                email = model.email,
+                password = hashedPassword,
+                role = string.IsNullOrEmpty(model.role) ? "user" : model.role,
+                created_at = DateTime.UtcNow,
+                department = model.department,
+                token = token,
+                token_forgot = null
+            };
+
+            _context.users.Add(newUser);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Account added";
+            return RedirectToAction("users" , "Admin");
+        }
     }
 }

@@ -14,9 +14,10 @@ namespace IMS.Data
         public DbSet<CommentsModel> comments { get; set; }
         public DbSet<CategoriesModel> categories { get; set; }
         public DbSet<AttachmentsModel> attachments { get; set; }
-
+        public DbSet<DepartmentsModel> departments { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             // Incidents - Users (Reporter)
             modelBuilder.Entity<IncidentsModel>()
                 .HasOne(i => i.User)

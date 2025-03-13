@@ -36,7 +36,6 @@ namespace IMS.Models
 
         public bool isRistrict { get; set; }
 
-        // Navigation properties
         public virtual ICollection<IncidentsModel> Incidents { get; set; }
         public virtual ICollection<UpdatesModel> Updates { get; set; }
         public virtual ICollection<CommentsModel> Comments { get; set; }

@@ -1,4 +1,4 @@
-﻿@model List<UsersModel>
+﻿@model IncidentViewModel
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,13 +93,19 @@
                         </li>
                         <li class="nav-item">
                             <a asp-action="categories" class="nav-link">
-                                <i class="fa-solid fa-list"></i>
+                                <i class="nav-icon fa-solid fa-list"></i>
                                 <p>Categories</p>
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a asp-action="department" class="nav-link">
+                                <i class="nav-icon fa-solid fa-building"></i>
+                                <p>Departments</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a asp-action="userslogs" class="nav-link">
-                                <i class="fas fa-clipboard-list"></i>
+                                <i class="nav-icon fas fa-clipboard-list"></i>
                                 <p>Logs</p>
                             </a>
                         </li>
@@ -116,12 +122,20 @@
                         <div class="col-md-4">
                             <select class="form-control">
                                 <option value="">Filter by Role</option>
-                                <option value="Admin">Admin</option>
                                 <option value="User">User</option>
                                 <option value="Moderator">Moderator</option>
                             </select>
                         </div>
                     </div>
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                    }
                     <div class="card">
                         <div class="card-header bg-dark text-white d-flex align-items-center">
                             <h3 class="card-title"><i class="fas fa-users"></i> User Management</h3>
@@ -135,22 +149,22 @@
                                 <table id="userstbl" class="table table-bordered table-striped datatable">
                                     <thead class="table-dark">
                                         <tr>
-                                            <th>ID</th>
                                             <th>Name</th>
                                             <th>Department</th>
+                                            <th>Email</th>
                                             <th>Role</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if (Model != null && Model.Any())
+                                        @if (Model.Users != null && Model.Users.Any())
                                         {
-                                            @foreach (var user in Model)
+                                            @foreach (var user in Model.Users)
                                             {
                                                 <tr>
-                                                    <td>@user.user_id</td>
                                                     <td>@user.full_name</td>
                                                     <td>@user.department</td>
+                                                    <td>@user.email</td>
                                                     <td>@user.role</td>
 
                                                     <td>
@@ -159,7 +173,6 @@
                                                                 @if (user.isRistrict)
                                                                 {
                                                                     <span class="text-danger"><i class="fas fa-ban"></i> Restricted</span>
-
                                                                 }
                                                                 else
                                                                 {
@@ -177,18 +190,18 @@
                                                                 <li>
                                                                     <form method="post" asp-action="UnrestrictUser" asp-route-id="@user.user_id">
                                                                         <button type="submit" class="dropdown-item text-success">
-                                                                            <i class="fas fa-user-check"></i> Unestrict
+                                                                            <i class="fas fa-user-check"></i> Unrestrict
                                                                         </button>
                                                                     </form>
                                                                 </li>
                                                             </ul>
                                                         </div>
                                                     </td>
-
                                                 </tr>
                                             }
                                         }
                                     </tbody>
+
                                 </table>
                             </div>
                         </div>
@@ -203,7 +216,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="post" asp-controller="login" asp-action="newuser">
+                            <form method="post" asp-controller="login" asp-action="adminnewuser">
                                 <div class="">
                                     <label for="fullName" class="form-label">Full Name</label>
                                     <input type="text" class="form-control" id="fullName" name="full_name" required>
@@ -214,12 +227,18 @@
                                 </div>
                                 <div class="">
                                     <label for="department" class="form-label">Department</label>
-                                    <input type="text" class="form-control" id="department" name="department">
+                                    <select class="form-control" id="department" name="department" required>
+                                        <option value="" disabled selected>Select Department</option>
+                                        <option value="None">None</option>
+                                        @foreach (var department in Model.Department)
+                                        {
+                                            <option value="@department.department">@department.department</option>
+                                        }
+                                    </select>
                                 </div>
                                 <div class="">
                                     <label for="role" class="form-label">Role</label>
                                     <select class="form-control" id="role" name="role" required>
-                                        <option value="admin">Admin</option>
                                         <option value="user">User</option>
                                         <option value="moderator">Moderator</option>
                                     </select>
