@@ -72,6 +72,9 @@ namespace IMS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("department_id")
+                        .HasColumnType("int");
+
                     b.Property<string>("description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -81,6 +84,8 @@ namespace IMS.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("category_id");
+
+                    b.HasIndex("department_id");
 
                     b.ToTable("categories");
                 });
@@ -161,6 +166,9 @@ namespace IMS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("department_id")
+                        .HasColumnType("int");
+
                     b.Property<string>("description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -191,6 +199,8 @@ namespace IMS.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("incident_id");
+
+                    b.HasIndex("department_id");
 
                     b.HasIndex("user_id");
 
@@ -335,6 +345,17 @@ namespace IMS.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("IMS.Models.CategoriesModel", b =>
+                {
+                    b.HasOne("IMS.Models.DepartmentsModel", "Department")
+                        .WithMany("Categories")
+                        .HasForeignKey("department_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+                });
+
             modelBuilder.Entity("IMS.Models.CommentsModel", b =>
                 {
                     b.HasOne("IMS.Models.IncidentsModel", "Incident")
@@ -356,11 +377,19 @@ namespace IMS.Migrations
 
             modelBuilder.Entity("IMS.Models.IncidentsModel", b =>
                 {
+                    b.HasOne("IMS.Models.DepartmentsModel", "Department")
+                        .WithMany("Incidents")
+                        .HasForeignKey("department_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("IMS.Models.UsersModel", "User")
                         .WithMany("Incidents")
                         .HasForeignKey("user_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Department");
 
                     b.Navigation("User");
                 });
@@ -393,6 +422,13 @@ namespace IMS.Migrations
                     b.Navigation("Incident");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("IMS.Models.DepartmentsModel", b =>
+                {
+                    b.Navigation("Categories");
+
+                    b.Navigation("Incidents");
                 });
 
             modelBuilder.Entity("IMS.Models.IncidentsModel", b =>

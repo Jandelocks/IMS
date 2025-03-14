@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IMS.Models
 {
@@ -15,5 +16,11 @@ namespace IMS.Models
 
         [Required]
         public string token { get; set; }
+
+        [Required]
+        [ForeignKey("Department")]
+        public int department_id { get; set; }
+
+        public virtual DepartmentsModel Department { get; set; }
     }
 }

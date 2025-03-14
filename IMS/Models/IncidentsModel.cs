@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IMS.Migrations;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -38,8 +39,13 @@ namespace IMS.Models
 
         public DateTime? updated_at { get; set; }
 
+        [Required]
+        [ForeignKey("Department")]
+        public int department_id { get; set; }
+
         // Navigation property
         public virtual UsersModel User { get; set; }
+        public virtual DepartmentsModel Department { get; set; }
         public virtual ICollection<UpdatesModel> Updates { get; set; } = new List<UpdatesModel>();
 
     }

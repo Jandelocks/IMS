@@ -1,4 +1,4 @@
-﻿@model List<CategoriesModel>
+﻿@model CategoriesDepartmentsViewModel
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -133,15 +133,17 @@
                                             <tr>
                                                 <th>Name</th>
                                                 <th>Description</th>
+                                                <th>Department</th>
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach (var category in Model)
+                                            @foreach (var category in Model.Categories)
                                             {
                                                 <tr>
                                                     <td>@category.category_name</td>
                                                     <td>@category.description</td>
+                                                    <td>@category.Department.department</td>
                                                     <td>
                                                         <button class="btn btn-warning btn-sm editCategoryBtn"
                                                                 data-id="@category.category_id"
@@ -172,6 +174,22 @@
                                                                     <div class="mb-3">
                                                                         <label for="editCategoryName" class="form-label">Category Name</label>
                                                                         <input type="text" id="editCategoryName" name="category_name" value="@category.category_name" class="form-control" required>
+                                                                    </div>
+
+                                                                    <div class="mb-3">
+                                                                        <label for="department" class="form-label">Department</label>
+                                                                         <select id="department" name="department" class="form-select" required>
+                                                                            <option value="" disabled>Select Department</option>
+                                                                            @if (category.Department != null)
+                                                                            {
+                                                                                <option value="@category.department_id" selected>@category.Department.department</option>
+                                                                            }
+
+                                                                            @foreach (var department in Model.Departments)
+                                                                            {
+                                                                                <option value="@department.department_id">@department.department</option>
+                                                                            }
+                                                                         </select>
                                                                     </div>
 
                                                                     <div class="mb-3">
@@ -210,6 +228,16 @@
                             <div class="mb-3">
                                 <label for="categoryName" class="form-label">Category Name</label>
                                 <input type="text" id="categoryName" name="category_name" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="department" class="form-label">Department</label>
+                                <select id="department" name="department" class="form-select" required>
+                                    <option value="" disabled selected>Select Department</option>
+                                    @foreach (var department in Model.Departments)
+                                    {
+                                        <option value="@department.department_id">@department.department</option>
+                                    }
+                                </select>
                             </div>
                             <div class="mb-3">
                                 <label for="categoryDesc" class="form-label">Category Description</label>

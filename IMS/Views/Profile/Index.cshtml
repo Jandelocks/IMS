@@ -125,14 +125,20 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a asp-controller="admin" asp-action="categories" class="nav-link">
-                                    <i class="fa-solid fa-list"></i>
+                                <a asp-controller="admin" asp-action="categories" class="nav-link active">
+                                    <i class="nav-icon fa-solid fa-list"></i>
                                     <p>Categories</p>
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a asp-controller="admin" asp-action="department" class="nav-link">
+                                    <i class="nav-icon fa-solid fa-building"></i>
+                                    <p>Departments</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a asp-controller="admin" asp-action="userslogs" class="nav-link">
-                                    <i class="fas fa-clipboard-list"></i>
+                                    <i class="nav-icon fas fa-clipboard-list"></i>
                                     <p>Logs</p>
                                 </a>
                             </li>
@@ -150,7 +156,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a asp-controller="users" asp-action="" class="nav-link">
+                                <a asp-controller="users" asp-action="ReportIncident" class="nav-link">
                                     <i class="nav-icon fas fa-file-alt"></i>
                                     <p>Submit Report</p>
                                 </a>

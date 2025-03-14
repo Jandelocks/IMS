@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authentication;
 using System.Net.Mail;
 using Newtonsoft.Json.Linq;
 using IMS.Services;
+using IMS.Migrations;
+using System.Security.Claims;
 namespace IMS.Controllers
 
 {
@@ -27,15 +29,34 @@ namespace IMS.Controllers
             _logService = logService;
         }
 
-        public async Task<IActionResult> Index()
+        //public async Task<IActionResult> Index()
+        //{
+        //    var incidents = await _context.categories.ToListAsync();
+        //    return View("Index",incidents);
+        //}
+
+        [HttpGet]
+        public async Task<IActionResult> Index(string token)
         {
-            var incidents = await _context.categories.ToListAsync();
-            return View("Index",incidents);
+            // Find the department using the token
+            var department = await _context.departments.FirstOrDefaultAsync(d => d.token == token);
+
+            if (department == null)
+            {
+                return NotFound("Department not found"); // Handle invalid token
+            }
+
+            ViewBag.DepartmentId = department.department_id; // Store department_id
+            ViewBag.DepartmentName = department.department;  // Optional: Store department name
+
+            var categories = await _context.categories.Where(c => c.department_id == department.department_id).ToListAsync();
+            return View("Index", categories);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> submitreports(string tittle, string description, string priority,
-                                      string category, IFormFile image)
+                                      string category, IFormFile image, int departmentId)
         {
             int? Id = HttpContext.Session.GetInt32("UserId");
             var userId = Convert.ToInt32(Id);
@@ -74,6 +95,7 @@ namespace IMS.Controllers
                 description = description,
                 priority = priority,
                 category = category,
+                department_id = departmentId,
                 token = token,
                 status = "Pending",
                 reported_at = DateTime.UtcNow
@@ -265,7 +287,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> Dashboard()
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
-
+            //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             // Fetch reports belonging to the logged-in user
             var userReports = await _context.incidents
                                             .Where(i => i.user_id == userId)
@@ -322,6 +344,12 @@ namespace IMS.Controllers
             }).ToList();
 
             return View("Resolved", resolvedlist);
+        }
+
+        public async Task<IActionResult> ReportIncident()
+        {
+            var departments = await _context.departments.ToListAsync();
+            return View(departments);
         }
     }
 }

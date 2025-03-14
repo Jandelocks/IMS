@@ -16,6 +16,9 @@ namespace IMS.Models
 
         public string? token { get; set; }
 
-        public string? ImagePath { get; set; } 
+        public string? ImagePath { get; set; }
+
+        public virtual ICollection<IncidentsModel> Incidents { get; set; } = new List<IncidentsModel>();
+        public virtual ICollection<CategoriesModel> Categories { get; set; } = new List<CategoriesModel>();
     }
 }

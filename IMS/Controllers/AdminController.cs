@@ -40,26 +40,37 @@ namespace IMS.Controllers
             // Fetch attachments related to those incidents
             var attachments = await _context.attachments.ToListAsync();
 
+            // Fetch updates related to those incidents
             var updates = await _context.updates
                                         .Where(u => incidents.Select(i => i.incident_id)
                                         .Contains(u.incident_id))
                                         .ToListAsync();
 
-            // Fetch all users who are moderators
-            var moderators = await _context.users
-                                           .Where(u => u.role == "moderator")
-                                           .ToListAsync();
+            // Fetch all departments
+            var departments = await _context.departments.ToListAsync();
 
+            // Fetch all users
             var users = await _context.users.ToListAsync();
 
-            // Combine incidents and attachments using ViewModel
-            var incidentList = incidents.Select(i => new IncidentViewModel
+            // Combine incidents and filter users based on department name
+            var incidentList = incidents.Select(i =>
             {
-                Incident = i,
-                Attachments = attachments.Where(a => a.incident_id == i.incident_id).ToList(),
-                Users = moderators, // Pass the list of moderators
-                User = users.FirstOrDefault(u => u.user_id == i.assigned_too),
-                Updates = updates.Where(u => u.incident_id == i.incident_id).ToList()
+                // Find department name based on incident's department_id
+                var department = departments.FirstOrDefault(d => d.department_id == i.department_id);
+                string departmentName = department?.department ?? "Unknown";
+
+                // Find users who have the same department name
+                var departmentUsers = users.Where(u => u.department == departmentName && u.role == "moderator").ToList();
+
+                return new IncidentViewModel
+                {
+                    Incident = i,
+                    Attachments = attachments.Where(a => a.incident_id == i.incident_id).ToList(),
+                    Users = departmentUsers, // Filtered users based on department name
+                    User = users.FirstOrDefault(u => u.user_id == i.assigned_too),
+                    Updates = updates.Where(u => u.incident_id == i.incident_id).ToList(),
+                    Departments = department
+                };
             }).ToList();
 
             return View("Incident", incidentList);
@@ -96,7 +107,6 @@ namespace IMS.Controllers
             return RedirectToAction("users");
         }
 
-        // POST: Unrestrict User
         [HttpPost]
         public async Task<IActionResult> UnrestrictUser(int id)
         {
@@ -155,14 +165,21 @@ namespace IMS.Controllers
             _logService.AddLog((int)userId, $"Assign Incidents to : {assignedUserId}");
             return RedirectToAction("Incidents");
         }
-        public IActionResult Categories()
+        public async Task<IActionResult> Categories()
         {
-            var categories = _context.categories.ToList();
-            return View("Categories", categories);
+            var categories = await _context.categories.ToListAsync();
+            var departments =await  _context.departments.ToListAsync();
+
+            var viewModel = new CategoriesDepartmentsViewModel
+            {
+                Categories = categories,
+                Departments = departments
+            };
+            return View("Categories", viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddCategory(string category_name, string category_desc)
+        public async Task<IActionResult> AddCategory(string category_name, string category_desc, int department)
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
@@ -171,6 +188,7 @@ namespace IMS.Controllers
             { 
                 category_name = category_name, 
                 description = category_desc ,
+                department_id = department,
                 token = token
             };
 
@@ -230,6 +248,7 @@ namespace IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> AddDepartment(string department_name, string department_desc, IFormFile image)
         {
+            var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
             int? userId = HttpContext.Session.GetInt32("UserId");
             string imagePath = null;
 
@@ -248,7 +267,8 @@ namespace IMS.Controllers
             {
                 department = department_name,
                 description = department_desc,
-                ImagePath = imagePath
+                ImagePath = imagePath,
+                token = token
             };
 
             _context.departments.Add(newDepartment);

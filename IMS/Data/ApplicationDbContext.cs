@@ -17,6 +17,26 @@ namespace IMS.Data
         public DbSet<DepartmentsModel> departments { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Department -> Categories (One-to-Many)
+            modelBuilder.Entity<CategoriesModel>()
+                .HasOne(c => c.Department)
+                .WithMany(d => d.Categories)
+                .HasForeignKey(c => c.department_id)
+                .OnDelete(DeleteBehavior.Cascade); // If department is deleted, delete categories too
+
+            // Relationship: Department → Incidents (One-to-Many)
+            modelBuilder.Entity<IncidentsModel>()
+               .HasOne(i => i.Department)
+               .WithMany(d => d.Incidents)
+               .HasForeignKey(i => i.department_id)
+               .OnDelete(DeleteBehavior.Cascade); // If a department is deleted, delete related incidents
+
+            // Relationship: Incident → User (One-to-Many)
+            modelBuilder.Entity<IncidentsModel>()
+                .HasOne(i => i.User)
+                .WithMany()
+                .HasForeignKey(i => i.user_id)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent user deletion if incidents exist
 
             // Incidents - Users (Reporter)
             modelBuilder.Entity<IncidentsModel>()
