@@ -24,7 +24,7 @@ namespace IMS.Services
                     user_id = user.user_id,
                     full_name = user.full_name,
                     action = action,
-                    log_time = DateTime.UtcNow,
+                    log_time = DateTime.Now,
                     token = Guid.NewGuid().ToString()
                 };
 

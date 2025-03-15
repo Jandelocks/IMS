@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using reCAPTCHA.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -39,6 +40,10 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Moderator", policy => policy.RequireRole("moderator"));
 });
 
+// Add reCAPTCHA service
+builder.Services.Configure<RecaptchaSettings>(builder.Configuration.GetSection("GoogleReCaptcha"));
+builder.Services.AddTransient<IRecaptchaService, RecaptchaService>();
+
 //Reports
 builder.Services.AddScoped<ReportService>();
 
@@ -47,7 +52,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register LogService
-builder.Services.AddScoped<LogService>();  
+builder.Services.AddScoped<LogService>();
+
+// Register SessionService
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<SessionService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

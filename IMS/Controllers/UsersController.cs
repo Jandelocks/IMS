@@ -1,19 +1,10 @@
 ﻿using IMS.Data;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
 using IMS.Models;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using System.Net.Mail;
-using Newtonsoft.Json.Linq;
 using IMS.Services;
-using IMS.Migrations;
-using System.Security.Claims;
 namespace IMS.Controllers
 
 {
@@ -23,17 +14,13 @@ namespace IMS.Controllers
 
         private readonly ApplicationDbContext _context;
         private readonly LogService _logService;
-        public UsersController(ApplicationDbContext context, LogService logService)
+        private readonly SessionService _sessionService;
+        public UsersController(ApplicationDbContext context, LogService logService, SessionService sessionService)
         {
             _context = context;
             _logService = logService;
+            _sessionService = sessionService;
         }
-
-        //public async Task<IActionResult> Index()
-        //{
-        //    var incidents = await _context.categories.ToListAsync();
-        //    return View("Index",incidents);
-        //}
 
         [HttpGet]
         public async Task<IActionResult> Index(string token)
@@ -58,8 +45,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> submitreports(string tittle, string description, string priority,
                                       string category, IFormFile image, int departmentId)
         {
-            int? Id = HttpContext.Session.GetInt32("UserId");
-            var userId = Convert.ToInt32(Id);
+            int userId = _sessionService.GetUserId();
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)); // Secure token
 
             // Validate if an image was uploaded
@@ -98,7 +84,7 @@ namespace IMS.Controllers
                 department_id = departmentId,
                 token = token,
                 status = "Pending",
-                reported_at = DateTime.UtcNow
+                reported_at = DateTime.Now
             };
 
             _context.incidents.Add(submitreport);
@@ -112,11 +98,11 @@ namespace IMS.Controllers
             {
                 var attach = new Models.AttachmentsModel
                 {
-                    user_id = (int)userId,
+                    user_id = userId,
                     incident_id = incidentId, // ✅ Link attachment to the incident
                     file_name = fileName,
                     file_path = "/uploads/" + fileName,
-                    uploaded_at = DateTime.UtcNow,
+                    uploaded_at = DateTime.Now,
                     token = token
                 };
 
@@ -130,9 +116,7 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> Reports()
         {
-            string? token = HttpContext.Session.GetString("Token");
-            string? userRole = HttpContext.Session.GetString("Role");
-            int? userId = HttpContext.Session.GetInt32("UserId"); // Get User ID from session
+            int userId = _sessionService.GetUserId();
 
             // Fetch incidents for the logged-in user
             var incidents = await _context.incidents
@@ -165,7 +149,7 @@ namespace IMS.Controllers
         [HttpGet]
         public IActionResult delete(int Id)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId"); // Get User ID from session
+            int userId = _sessionService.GetUserId();
             var person = _context.incidents.Find(Id); // Find the person by ID
             
             if (person == null)
@@ -175,21 +159,35 @@ namespace IMS.Controllers
 
             _context.incidents.Remove(person); // Remove the person
             _context.SaveChanges(); // Save changes
-            _logService.AddLog((int)userId, "Delete Report");
+            _logService.AddLog(userId, "Delete Report");
             return RedirectToAction("Reports"); // Redirect back to list
         }
 
         //Update
         public async Task<IActionResult> Edit(string token)
         {
-            //var incident = await _context.incidents.FindAsync(Id);
-            var categories = await _context.categories.ToListAsync();
+            // Step 1: Retrieve the incident using the token
             var incident = await _context.incidents.FirstOrDefaultAsync(i => i.token == token);
+
             if (incident == null)
             {
-                return NotFound();
+                return NotFound("Incident not found");
             }
 
+            // Step 2: Find the department using the incident's department_id
+            var department = await _context.departments.FirstOrDefaultAsync(d => d.department_id == incident.department_id);
+
+            if (department == null)
+            {
+                return NotFound("Department not found");
+            }
+
+            // Step 3: Retrieve categories belonging to the department
+            var categories = await _context.categories
+                .Where(c => c.department_id == department.department_id)
+                .ToListAsync();
+
+            // Step 4: Pass data to the ViewModel
             var viewModel = new IncidentViewModel
             {
                 Incident = incident,
@@ -199,12 +197,11 @@ namespace IMS.Controllers
             return View("Update", viewModel);
         }
 
-
         [HttpPost]
         public async Task<IActionResult> Updateinc(int Id, string tittle, string description,
                                            string category, string priority, IFormFile image)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var incident = _context.incidents.Find(Id);
             if (incident == null)
             {
@@ -216,14 +213,9 @@ namespace IMS.Controllers
             incident.category = category;
             incident.priority = priority;
 
-            _logService.AddLog((int)userId, $"Update incident: {tittle}");
+            _logService.AddLog(userId, $"Update incident: {tittle}");
 
             _context.SaveChanges(); // Save updated incident details
-
-            if (userId == null)
-            {
-                return RedirectToAction("Login"); // Redirect if session expired
-            }
 
             string filePath = "";
             string fileName = "";
@@ -262,18 +254,18 @@ namespace IMS.Controllers
                     // Update existing attachment
                     existingAttachment.file_name = fileName;
                     existingAttachment.file_path = "/uploads/" + fileName;
-                    existingAttachment.uploaded_at = DateTime.UtcNow;
+                    existingAttachment.uploaded_at = DateTime.Now;
                 }
                 else
                 {
                     // Add new attachment record
                     var attach = new Models.AttachmentsModel
                     {
-                        user_id = (int)userId,
+                        user_id = userId,
                         incident_id = Id,
                         file_name = fileName,
                         file_path = "/uploads/" + fileName,
-                        uploaded_at = DateTime.UtcNow,
+                        uploaded_at = DateTime.Now,
                         token = incident.token
                     };
                     _context.attachments.Add(attach);
@@ -286,13 +278,10 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> Dashboard()
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            // Fetch reports belonging to the logged-in user
+            int userId = _sessionService.GetUserId();
             var userReports = await _context.incidents
                                             .Where(i => i.user_id == userId)
                                             .ToListAsync();
-
             // Store counts in ViewBag
             ViewBag.TotalReports = userReports.Count;
             ViewBag.PendingReports = userReports.Count(i => i.status == "Pending");
@@ -303,7 +292,7 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> Resolved(int update_id)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var update = await _context.updates.FindAsync(update_id);
             if (update == null)
             {
@@ -315,16 +304,16 @@ namespace IMS.Controllers
                 return NotFound();
             }
             incident.status = "Closed";
-            incident.updated_at = DateTime.UtcNow;
+            incident.updated_at = DateTime.Now;
             await _context.SaveChangesAsync();
 
-            _logService.AddLog((int)userId, "Incident closed");
+            _logService.AddLog(userId, "Incident closed");
             return RedirectToAction("Reports");
         }
 
         public async Task<IActionResult> Closed()
         {
-            int? userId = HttpContext.Session.GetInt32("UserId"); // Get User ID from session
+            int userId = _sessionService.GetUserId();
 
             // Fetch incidents for the logged-in user
             var incidents = await _context.incidents

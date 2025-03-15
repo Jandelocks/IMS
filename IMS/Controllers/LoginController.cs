@@ -9,6 +9,7 @@ using IMS.ViewModels;
 using System.Net.Mail;
 using System.Net;
 using IMS.Services;
+using reCAPTCHA.AspNetCore;
 
 namespace IMS.Controllers
 {
@@ -17,10 +18,12 @@ namespace IMS.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly LogService _logService;
-        public LoginController(ApplicationDbContext context, LogService logService)
+        private readonly IRecaptchaService _recaptchaService;
+        public LoginController(ApplicationDbContext context, LogService logService, IRecaptchaService recaptchaService)
         {
             _context = context;
             _logService = logService;
+            _recaptchaService = recaptchaService;
         }
 
         public IActionResult Index()
@@ -157,7 +160,7 @@ namespace IMS.Controllers
                 email = model.email,
                 password = hashedPassword,
                 role = string.IsNullOrEmpty(model.role) ? "user" : model.role,
-                created_at = DateTime.UtcNow,
+                created_at = DateTime.Now,
                 department = model.department,
                 token = token,
                 token_forgot = null
@@ -173,6 +176,22 @@ namespace IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> signup(string email, string password)
         {
+            var recaptchaResponse = Request.Form["g-recaptcha-response"];
+
+            if (string.IsNullOrEmpty(recaptchaResponse))
+            {
+                TempData["ErrorMessage"] = "reCAPTCHA response is required.";
+                return RedirectToAction("index");
+            }
+
+            // Validate reCAPTCHA
+            var recaptchaResult = await _recaptchaService.Validate(recaptchaResponse);
+            if (!recaptchaResult.success)
+            {
+                TempData["ErrorMessage"] = "reCAPTCHA verification failed. Please try again.";
+                return RedirectToAction("index");
+            }
+
             var user = _context.users.FirstOrDefault(u => u.email == email);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.password))
@@ -236,7 +255,6 @@ namespace IMS.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-              HttpContext.Session.Clear();
             return Redirect("/login");
         }
 
@@ -268,7 +286,7 @@ namespace IMS.Controllers
                 email = model.email,
                 password = hashedPassword,
                 role = string.IsNullOrEmpty(model.role) ? "user" : model.role,
-                created_at = DateTime.UtcNow,
+                created_at = DateTime.Now,
                 department = model.department,
                 token = token,
                 token_forgot = null

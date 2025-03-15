@@ -12,17 +12,19 @@ namespace IMS.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly LogService _logService;
-        public ProfileController(ApplicationDbContext context, LogService logService)
+        private readonly SessionService _sessionService;
+        public ProfileController(ApplicationDbContext context, LogService logService, SessionService sessionService)
         {
             _context = context;
             _logService = logService;
+            _sessionService = sessionService;
         }
 
         //[Authorize(Roles = "admin")]
         public async Task<IActionResult> Index()
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
+            int userId = _sessionService.GetUserId();
+            if (userId == 0)
             {
                 return RedirectToAction("Index", "login");
             }
@@ -34,6 +36,7 @@ namespace IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> Updateprofile(int Id, string name, string email, string password, string confirmpassword, IFormFile profilepic)
         {
+            int userId = _sessionService.GetUserId();
             var user = await _context.users.FindAsync(Id);
             if (user == null)
             {
@@ -86,6 +89,7 @@ namespace IMS.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Profile updated successfully!";
+            _logService.AddLog(userId, "Updated profile");
             return RedirectToAction("Index");
         }
     }

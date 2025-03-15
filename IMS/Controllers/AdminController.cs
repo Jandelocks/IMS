@@ -14,10 +14,12 @@ namespace IMS.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly LogService _logService;
-        public AdminController(ApplicationDbContext context, LogService logService)
+        private readonly SessionService _sessionService;
+        public AdminController(ApplicationDbContext context, LogService logService, SessionService sessionService)
         {
             _context = context;
             _logService = logService;
+            _sessionService = sessionService;
         }
 
         public async Task<IActionResult> Index()
@@ -94,7 +96,7 @@ namespace IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> RestrictUser(int id)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var user = await _context.users.FindAsync(id);
             if (user == null)
             {
@@ -103,14 +105,14 @@ namespace IMS.Controllers
 
             user.isRistrict = true; // Restrict user
             await _context.SaveChangesAsync();
-            _logService.AddLog((int)userId, $"Restrict: {id}");
+            _logService.AddLog(userId, $"Restrict: {id}");
             return RedirectToAction("users");
         }
 
         [HttpPost]
         public async Task<IActionResult> UnrestrictUser(int id)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var user = await _context.users.FindAsync(id);
             if (user == null)
             {
@@ -119,7 +121,7 @@ namespace IMS.Controllers
 
             user.isRistrict = false; // Unrestrict user
             await _context.SaveChangesAsync();
-            _logService.AddLog((int)userId, $"Unrestrict: {id}");
+            _logService.AddLog(userId, $"Unrestrict: {id}");
             return RedirectToAction("users");
         }
 
@@ -127,7 +129,7 @@ namespace IMS.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(int Id)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var incident = await _context.incidents.FindAsync(Id);
             if (incident == null)
             {
@@ -142,7 +144,7 @@ namespace IMS.Controllers
             }
 
             _context.incidents.Remove(incident);
-            _logService.AddLog((int)userId, $"Remove Incident: {incident.tittle}");
+            _logService.AddLog(userId, $"Remove Incident: {incident.tittle}");
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Incidents"); // Redirect back to list
@@ -151,7 +153,7 @@ namespace IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> AssignIncident(int id, int assignedUserId)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var incident = await _context.incidents.FindAsync(id);
             if (incident == null)
             {
@@ -181,7 +183,7 @@ namespace IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> AddCategory(string category_name, string category_desc, int department)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
             var newcategory = new CategoriesModel 
@@ -202,7 +204,7 @@ namespace IMS.Controllers
         [HttpGet]
         public IActionResult DeleteCategory(int Id)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var cat = _context.categories.Find(Id); 
             if (cat == null)
             {
@@ -211,18 +213,18 @@ namespace IMS.Controllers
             _context.categories.Remove(cat); 
             _context.SaveChanges();
 
-            _logService.AddLog((int)userId, $"Deleted category: {cat.category_name}");
+            _logService.AddLog(userId, $"Deleted category: {cat.category_name}");
             return RedirectToAction("Categories"); 
         }
 
         [HttpPost]
         public async Task<IActionResult> EditCategory(int id, string category_name, string category_desc)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var cat = await _context.categories.FindAsync(id);
             if (cat == null)
             {
-                return Content("no");
+                return Content("Invalid Action");
             }
 
             cat.category_name = category_name; 
@@ -249,7 +251,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> AddDepartment(string department_name, string department_desc, IFormFile image)
         {
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             string imagePath = null;
 
             if (image != null && image.Length > 0)
@@ -273,7 +275,7 @@ namespace IMS.Controllers
 
             _context.departments.Add(newDepartment);
             await _context.SaveChangesAsync();
-            _logService.AddLog((int)userId, $"Add new department: {department_name}");
+            _logService.AddLog(userId, $"Add new department: {department_name}");
             return RedirectToAction("Department");
         }
 
@@ -281,7 +283,7 @@ namespace IMS.Controllers
         [HttpGet]
         public IActionResult DeleteDepartment(int Id)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var dep = _context.departments.Find(Id);
             if (dep == null)
             {
@@ -289,19 +291,15 @@ namespace IMS.Controllers
             }
             _context.departments.Remove(dep);
             _context.SaveChanges();
-            _logService.AddLog((int)userId, $"Deleted department: {dep.department}");
+            _logService.AddLog(userId, $"Deleted department: {dep.department}");
             return RedirectToAction("Department");
         }
 
         [HttpPost]
         public async Task<IActionResult> EditDepartment(int id, string department_name, string department_desc, IFormFile image)
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var department = await _context.departments.FindAsync(id);
-            if (department == null)
-            {
-                return Content("no");
-            }
 
             string imagePath = department.ImagePath;
 
@@ -331,7 +329,7 @@ namespace IMS.Controllers
             department.description = department_desc;
             department.ImagePath = imagePath;
             await _context.SaveChangesAsync();
-            _logService.AddLog((int)userId, $"Update department: {department_name}");
+            _logService.AddLog(userId, $"Update department: {department_name}");
             return RedirectToAction("Department");
         }
     }

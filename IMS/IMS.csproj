@@ -17,10 +17,10 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="reCAPTCHA.AspNetCore" Version="3.0.10" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Migrations\" />
     <Folder Include="wwwroot\departments\" />
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>

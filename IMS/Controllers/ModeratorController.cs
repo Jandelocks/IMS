@@ -14,14 +14,16 @@ namespace IMS.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly LogService _logService;
-        public ModeratorController(ApplicationDbContext context, LogService logService)
+        private readonly SessionService _sessionService;
+        public ModeratorController(ApplicationDbContext context, LogService logService, SessionService sessionService)
         {
             _context = context;
             _logService = logService;
+            _sessionService = sessionService;
         }
         public async Task<IActionResult> Index()
         {
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
             var userReports = await _context.incidents.
                                                 Where(i => i.assigned_too == userId)
                                                 .ToListAsync();
@@ -36,8 +38,7 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> manageIncidents()
         {
-            string? token = HttpContext.Session.GetString("Token");
-            int? userId = HttpContext.Session.GetInt32("UserId");
+            int userId = _sessionService.GetUserId();
 
             var incidents = await _context.incidents
                                           .Where(i => i.assigned_too == userId)
@@ -67,7 +68,6 @@ namespace IMS.Controllers
         public async Task<IActionResult> Resolve(int incidentId, int userid, string comments, IFormFile attach)
         {
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)); // Secure token
-            // Handle file attachment (if provided)
             string filePath = null;
             if (attach != null && attach.Length > 0)
             {
@@ -91,7 +91,7 @@ namespace IMS.Controllers
                 update_text = comments,
                 user_id = userid,
                 token = token,
-                updated_at = DateTime.UtcNow,
+                updated_at = DateTime.Now,
                 attachments = filePath != null ? "/uploads/" + attach.FileName : null
             };
 
@@ -119,9 +119,7 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> reviewReports()
         {
-            string? token = HttpContext.Session.GetString("Token");
-            int? userId = HttpContext.Session.GetInt32("UserId");
-
+            int userId = _sessionService.GetUserId();
             var incidents = await _context.incidents
                                           .Where(i => i.assigned_too == userId)
                                           .Where(i => i.status == "Closed")
