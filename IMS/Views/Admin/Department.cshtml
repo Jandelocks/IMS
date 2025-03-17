@@ -150,17 +150,17 @@
                                                     <td>@department.department</td>
                                                     <td>@department.description</td>
                                                     <td>
-                                                        <button class="btn btn-warning btn-sm editdepartmentBtn"
+                                                        <button class="btn btn-warning btn-sm mb-1"
                                                                 data-id="@department.department_id"
                                                                 data-name="@department.department"
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#editdepartmentModal-@department.department_id">
-                                                            <i class="fa-solid fa-edit"></i>update
+                                                            <i class="fa-solid fa-edit"></i> Update
                                                         </button>
                                                         <form method="get" asp-action="Deletedepartment" asp-route-id="@department.department_id" class="d-inline">
-                                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                            <button type="submit" class="btn btn-danger btn-sm mb-1"
                                                                     onclick="return confirm('Are you sure you want to delete this department?');">
-                                                                <i class="fa-solid fa-trash"></i>Delete
+                                                                <i class="fa-solid fa-trash"></i> Delete
                                                             </button>
                                                         </form>
                                                     </td>

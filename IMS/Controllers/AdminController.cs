@@ -24,12 +24,12 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var incident = await _context.incidents.ToListAsync();
-
-            ViewBag.TotalReports = incident.Count;
-            ViewBag.PendingReports = incident.Count(i => i.status == "Pending");
-            ViewBag.ResolvedReports = incident.Count(i => i.status == "Resolved");
-            ViewBag.InProgressReports = incident.Count(i => i.status == "In Progress");
+            var incident = await _context.incidents.Where(i => i.status == "Pending").OrderByDescending(u => u.incident_id).ToListAsync();
+            var incidents = await _context.incidents.ToListAsync();
+            ViewBag.TotalReports = incidents.Count;
+            ViewBag.PendingReports = incidents.Count(i => i.status == "Pending");
+            ViewBag.ResolvedReports = incidents.Count(i => i.status == "Resolved");
+            ViewBag.InProgressReports = incidents.Count(i => i.status == "In Progress");
 
             return View("Index", incident); // Pass incident directly to the view
         }
@@ -78,10 +78,10 @@ namespace IMS.Controllers
             return View("Incident", incidentList);
         }
 
-
         public async Task<IActionResult> users()
         {
-            var Users = await _context.users.Where(i => i.role != "admin").ToListAsync();
+            int userId = _sessionService.GetUserId();
+            var Users = await _context.users.Where(i => i.user_id != userId).ToListAsync();
             var Departments = await _context.departments.ToListAsync();
 
             var viewModel = new IncidentViewModel
@@ -331,6 +331,45 @@ namespace IMS.Controllers
             await _context.SaveChangesAsync();
             _logService.AddLog(userId, $"Update department: {department_name}");
             return RedirectToAction("Department");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteUser(string token)
+        {
+            int userId = _sessionService.GetUserId();
+            var user = await _context.users.FirstOrDefaultAsync(u => u.token == token);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            TempData["SuccessMessage"] = $"User {user.full_name} has been deleted";
+            _context.users.Remove(user);
+            await _context.SaveChangesAsync();
+            _logService.AddLog(userId, $"Delete user: {user.full_name}");
+            return RedirectToAction("users");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateUserRole(string token, string role)
+        {
+            int userId = _sessionService.GetUserId();
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(role))
+            {
+                return BadRequest();
+            }
+
+            var user = await _context.users.FirstOrDefaultAsync(u => u.token == token);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            TempData["SuccessMessage"] = $"User {user.full_name} role has been updated to {role}";
+            user.role = role;
+            _context.users.Update(user);
+            await _context.SaveChangesAsync();
+            _logService.AddLog(userId, $"Update user role: {user.full_name} to {role}");
+            return RedirectToAction("users");
         }
     }
 }

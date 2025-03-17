@@ -1,4 +1,8 @@
 ﻿@model List<IncidentsModel>
+@{
+    var userId = ViewBag.UserId;
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -150,9 +154,81 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card">
+                                <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                                    <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Recent Incidents</h3>
+                                    <a asp-action="manageIncidents" class="btn btn-success ms-auto"><i class="fas fa-eye"></i> View all Incidents</a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table id="tbl" class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Title</th>
+                                                    <th>Category</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model != null && Model.Any())
+                                                {
+                                                    @foreach (var incident in Model)
+                                                    {
+                                                        <tr>
+                                                            <td>@incident.tittle</td>
+                                                            <td>@incident.category</td>
+                                                            <td>@incident.status</td>
+                                                            
+                                                        </tr> 
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-dark text-white">
+                                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Incidents Assigned</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="moderatorChart" data-userid="@userId"></canvas>
+                                </div>
+                            </div>
+                         </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <script>
+        jQuery.noConflict();
+        jQuery(document).ready(function ($) {
+            console.log("Document is ready. Initializing DataTable...");
+
+            if ($.fn.DataTable) {
+                $('#tbl').DataTable({
+                    "paging": true,  // Enable pagination
+                    "lengthMenu": [5, 10, 15, 20], // Page length options
+                    "ordering": true, // Enable sorting
+                    "info": true, // Show table info
+                    "searching": true, // Enable search bar
+                    "language": {
+                        "paginate": {
+                            "previous": "<i class='fas fa-chevron-left'></i>",
+                            "next": "<i class='fas fa-chevron-right'></i>"
+                        }
+                    }
+                });
+            } else {
+                console.error("DataTable is not defined. Check if DataTables JS is loaded properly.");
+            }
+        });
+    </script>
 </body>
+
 </html>

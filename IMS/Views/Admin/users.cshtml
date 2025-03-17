@@ -171,7 +171,47 @@
                                                     <td>@user.full_name</td>
                                                     <td>@user.department</td>
                                                     <td>@user.email</td>
-                                                    <td>@user.role</td>
+                                                    <td>
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                @if (user.role == "admin")
+                                                                {
+                                                                    <span class="text-danger"><i class="fa-solid fa-user-tie"></i> Admin</span>
+                                                                }
+                                                                else if (user.role == "moderator")
+                                                                {
+                                                                    <span class="text-warning"><i class="fa-solid fa-user-secret"></i> Moderator</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="text-success"><i class="fa-solid fa-user"></i> User</span>
+                                                                }
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li>
+                                                                    <form method="post" asp-action="UpdateUserRole" asp-route-token="@user.token">
+                                                                        <button type="submit" name="role" value="admin" class="dropdown-item text-danger">
+                                                                            <i class="fa-solid fa-user-tie"></i> Admin
+                                                                        </button>
+                                                                    </form>
+                                                                </li>
+                                                                <li>
+                                                                    <form method="post" asp-action="UpdateUserRole" asp-route-token="@user.token">
+                                                                        <button type="submit" name="role" value="moderator" class="dropdown-item text-warning">
+                                                                            <i class="fa-solid fa-user-secret"></i> Moderator
+                                                                        </button>
+                                                                    </form>
+                                                                </li>
+                                                                <li>
+                                                                    <form method="post" asp-action="UpdateUserRole" asp-route-token="@user.token">
+                                                                        <button type="submit" name="role" value="user" class="dropdown-item text-success">
+                                                                            <i class="fa-solid fa-user"></i> User
+                                                                        </button>
+                                                                    </form>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
 
                                                     <td>
                                                         <div class="dropdown">
@@ -202,6 +242,9 @@
                                                                 </li>
                                                             </ul>
                                                         </div>
+                                                        <a asp-action="deleteuser" class="btn text-danger" asp-route-token="@user.token">
+                                                            <i class="fa-solid fa-user-xmark"></i> Delete
+                                                        </a>
                                                     </td>
                                                 </tr>
                                             }

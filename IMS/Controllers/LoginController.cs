@@ -19,12 +19,15 @@ namespace IMS.Controllers
         private readonly ApplicationDbContext _context;
         private readonly LogService _logService;
         private readonly IRecaptchaService _recaptchaService;
-        public LoginController(ApplicationDbContext context, LogService logService, IRecaptchaService recaptchaService)
+        private readonly SessionService _sessionService;
+        public LoginController(ApplicationDbContext context, LogService logService, IRecaptchaService recaptchaService, SessionService sessionService)
         {
             _context = context;
             _logService = logService;
             _recaptchaService = recaptchaService;
+            _sessionService = sessionService;
         }
+
 
         public IActionResult Index()
         {
@@ -174,7 +177,7 @@ namespace IMS.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> signup(string email, string password)
+        public async Task<IActionResult> signup(string email, string password, bool rememberMe = false)
         {
             var recaptchaResponse = Request.Form["g-recaptcha-response"];
 
@@ -184,7 +187,6 @@ namespace IMS.Controllers
                 return RedirectToAction("index");
             }
 
-            // Validate reCAPTCHA
             var recaptchaResult = await _recaptchaService.Validate(recaptchaResponse);
             if (!recaptchaResult.success)
             {
@@ -212,11 +214,17 @@ namespace IMS.Controllers
                     new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
                     new Claim(ClaimTypes.Email, user.email),
                     new Claim(ClaimTypes.Role, user.role),
-                    new Claim("FullName", user.full_name)
+                    new Claim("FullName", user.full_name),
+                    new Claim("Token", user.token) // Store the token in claims
                 };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var authProperties = new AuthenticationProperties { IsPersistent = true };
+
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = rememberMe, // This will keep the login persistent if checked
+                ExpiresUtc = rememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.Now.AddHours(1) // 30 days if remember me is checked
+            };
 
             // Sign in user
             await HttpContext.SignInAsync(
@@ -228,35 +236,60 @@ namespace IMS.Controllers
             HttpContext.Session.SetInt32("UserId", user.user_id);
             HttpContext.Session.SetString("Token", user.token);
 
-            // Redirect based on role
-            if (user.isRistrict == false)
+            // Save token in a cookie for persistence
+            if (rememberMe)
             {
-                _logService.AddLog(user.user_id, "User logged in");
+                Response.Cookies.Append("UserToken", user.token, new CookieOptions
+                {
+                    HttpOnly = true, // Protect from XSS
+                    Secure = true, // Use HTTPS
+                    Expires = DateTime.UtcNow.AddDays(30) // Expiry of 30 days
+                });
+            }
 
-                if (user.role == "admin")
-                {
-                    return Redirect("/Admin/");
-                }
-                else if (user.role == "user")
-                {
-                    return Redirect("/users/dashboard");
-                }
-                else
-                {
-                    return Redirect("/moderator"); // Default redirect if role is undefined
-                }
-            }
-            else
+            _logService.AddLog(user.user_id, "User logged in");
+
+            return user.role switch
             {
-                TempData["ErrorMessage"] = "You dont have Permission to Login";
-                return RedirectToAction("index");
-            }
+                "admin" => Redirect("/Admin/"),
+                "user" => Redirect("/users/dashboard"),
+                _ => Redirect("/moderator") // Default redirect
+            };
         }
+
         public async Task<IActionResult> Logout()
         {
+            // Generate a new secure token
+            var newToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+            // Get the currently logged-in user's ID from the session
+            int userId = _sessionService.GetUserId();
+
+            if (userId == 0) // Ensure a valid user is logged in
+            {
+                return Redirect("/login");
+            }
+
+            // Find the user in the database
+            var user = await _context.users.FindAsync(userId);
+
+            if (user != null)
+            {
+                user.token = newToken; // Update token
+                _context.users.Update(user);
+                await _context.SaveChangesAsync(); // Save changes in the database
+            }
+
+            // Sign out the user
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Remove the token from cookies and session
+            Response.Cookies.Delete("UserToken");
+            HttpContext.Session.Clear();
+
             return Redirect("/login");
         }
+
 
         public async Task<IActionResult> adminnewuser(RegisterViewModel model)
         {

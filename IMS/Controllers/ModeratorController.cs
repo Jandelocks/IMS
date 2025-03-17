@@ -32,7 +32,7 @@ namespace IMS.Controllers
             ViewBag.InProressReport = userReports.Count(i => i.status == "In Progress");
             ViewBag.ResolvedReports = userReports.Count(i => i.status == "Resolved");
             ViewBag.ClosedReports = userReports.Count(i => i.status == "Closed");
-
+            ViewBag.UserId = userId;
             return View("Index", userReports);
         }
 
