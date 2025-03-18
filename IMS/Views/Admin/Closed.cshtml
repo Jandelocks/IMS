@@ -1,0 +1,395 @@
+﻿@model List<IncidentViewModel>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - IMS</title>
+
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+    <!-- jQuery (Must be before DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <!-- DataTables JS (Must be after jQuery) -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <!-- AdminLTE JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="#" class="nav-link">Categories</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a asp-controller="profile" asp-action="" class="nav-link"><i class="fas fa-user"></i> Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-danger" asp-controller="login" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="#" class="brand-link text-center">
+                <span class="brand-text font-weight-bold">
+                    IMS -
+                    @if (User.IsInRole("admin"))
+                    {
+                        <text>Admin</text>
+                    }
+                    else if (User.IsInRole("moderator"))
+                    {
+                        <text>Moderator</text>
+                    }
+                    else
+                    {
+                        <text>User</text>
+                    }
+                </span>
+            </a>
+            <div class="sidebar">
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                        <li class="nav-item">
+                            <a asp-action="" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a asp-action="incidents" class="nav-link">
+                                <i class="nav-icon fas fa-exclamation-triangle"></i>
+                                <p>Incidents</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a asp-action="Closed" class="nav-link active">
+                                <i class="nav-icon fa-solid fa-clipboard-check"></i>
+                                <p>Closed Cases</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a asp-action="users" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>Users</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a asp-action="categories" class="nav-link">
+                                <i class="nav-icon fa-solid fa-list"></i>
+                                <p>Categories</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a asp-action="department" class="nav-link">
+                                <i class="nav-icon fa-solid fa-building"></i>
+                                <p>Departments</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a asp-action="userslogs" class="nav-link">
+                                <i class="nav-icon fas fa-clipboard-list"></i>
+                                <p>Logs</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <div class="content-wrapper p-3">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-dark text-white">
+                                <h3 class="card-title"><i class="fa-solid fa-clipboard-check"></i> Closed Incident Reports</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="tbl" class="table table-bordered table-striped">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Date Closed</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model != null && Model.Any())
+                                            {
+                                                @foreach (var item in Model)
+                                                {
+                                                    var incident = item.Incident;
+                                                    var attachments = item.Attachments;
+                                                    <tr>
+                                                        <td>@incident.tittle</td>
+                                                        <td>@(incident.updated_at?.ToString("MMM dd, yyyy") ?? "N/A")</td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-primary btn-sm"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#incidentModal-@incident.incident_id">
+                                                                <i class="fas fa-eye"></i> View
+                                                            </button>
+                                                            <button type="button" class="btn btn-success btn-sm"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#FeedbackModal-@incident.incident_id">
+                                                                <i class="fa-solid fa-comment"></i> Feedback
+                                                            </button>
+                                                            <a asp-controller="reports" asp-action="downloadincidentreport" asp-route-incidentId="@incident.incident_id" class="btn btn-secondary btn-sm">
+                                                                <i class="fa fa-download"></i> Download
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+
+                                                    <div class="modal fade" id="FeedbackModal-@incident.incident_id" tabindex="-1" aria-labelledby="FeedbackModalLabel-@incident.incident_id" aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header bg-success text-white">
+                                                                    <h5 class="modal-title" id="FeedbackModalLabel-@incident.incident_id">
+                                                                        <i class="fa-solid fa-comment"></i> Feedback
+                                                                    </h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    @if (item.Comments.Any())
+                                                                    {
+                                                                        @foreach (var feedback in item.Comments)
+                                                                        {
+                                                                            <div class="border rounded p-3 bg-light mb-3">
+                                                                                <p><strong><i class="fas fa-user"></i> Submitted by:</strong> @(item.User?.full_name ?? "Anonymous")</p>
+                                                                                <p><strong><i class="fas fa-calendar-alt"></i> Submitted on:</strong> @feedback.commented_at.ToString("MMM dd, yyyy")</p>
+
+                                                                                <p><strong><i class="fas fa-star"></i> Rating:</strong></p>
+                                                                                <div class="star-rating">
+                                                                                    @for (int i = 1; i <= 5; i++)
+                                                                                    {
+                                                                                        if (i <= feedback.rating)
+                                                                                        {
+                                                                                            <i class="fas fa-star text-warning"></i> <!-- Filled Star -->
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <i class="far fa-star text-muted"></i> <!-- Empty Star -->
+                                                                                        }
+                                                                                    }
+                                                                                </div>
+
+                                                                                <p class="mt-2"><strong><i class="fas fa-comment-dots"></i> Feedback:</strong></p>
+                                                                                <div class="border rounded p-3 bg-white">
+                                                                                    @feedback.comment_text
+                                                                                </div>
+                                                                            </div>
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <p class="text-muted">No feedback available.</p>
+                                                                    }
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                        <i class="fas fa-times"></i> Close
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Combined Modal for Incident Details and Moderator Comments -->
+                                                    <div class="modal fade" id="incidentModal-@incident.incident_id" tabindex="-1"
+                                                         aria-labelledby="modalTitle-@incident.incident_id" aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered modal-md">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header
+                                                                @(incident.priority == "Low" ? "bg-success" :
+                                                                  incident.priority == "Medium" ? "bg-warning" :
+                                                                  "bg-danger") text-white">
+                                                                    <h5 class="modal-title" id="modalTitle-@incident.incident_id">
+                                                                        <i class="fas fa-exclamation-triangle"></i> Incident Details
+                                                                    </h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="container">
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-6">
+                                                                                <p><strong><i class="fas fa-heading"></i> Title:</strong> @incident.tittle</p>
+                                                                            </div>
+                                                                            <div class="col-md-6">
+                                                                                <p><strong><i class="fas fa-tags"></i> Category:</strong> @incident.category</p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-6">
+                                                                                <p>
+                                                                                    <strong><i class="fas fa-exclamation-circle"></i> Priority:</strong>
+                                                                                    <span class="badge
+                                                                                    @(incident.priority == "Low" ? "bg-success" :
+                                                                                      incident.priority == "Medium" ? "bg-warning" :
+                                                                                      "bg-danger")">
+                                                                                        @incident.priority
+                                                                                    </span>
+                                                                                </p>
+                                                                            </div>
+                                                                            <div class="col-md-6">
+                                                                                <p><strong><i class="fas fa-calendar-alt"></i> Reported At:</strong> @incident.reported_at</p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-12">
+                                                                                <p>
+                                                                                    <strong><i class="fas fa-info-circle"></i> Status:</strong>
+                                                                                    <span class="badge
+                                                                                    @(@incident.status == "Pending" ? "bg-warning" :
+                                                                                      "bg-success")">
+                                                                                        @incident.status
+                                                                                    </span>
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row">
+                                                                            <div class="col-md-12">
+                                                                                <p><strong><i class="fas fa-file-alt"></i> Description:</strong></p>
+                                                                                <div class="border rounded p-3 bg-light">
+                                                                                    @incident.description
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row mt-3">
+                                                                            <div class="col-md-12">
+                                                                                <p><strong><i class="fas fa-paperclip"></i> Attachments:</strong></p>
+                                                                                @if (attachments.Any())
+                                                                                {
+                                                                                    <div class="row">
+                                                                                        @foreach (var attachment in attachments)
+                                                                                        {
+                                                                                            string fileExtension = System.IO.Path.GetExtension(attachment.file_path).ToLower();
+                                                                                            bool isImage = fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png" || fileExtension == ".gif";
+
+                                                                                            <div class="col-md-4 mb-2">
+                                                                                                @if (isImage)
+                                                                                                {
+                                                                                                    <a href="@attachment.file_path" target="_blank">
+                                                                                                        <img src="@attachment.file_path" class="img-fluid img-thumbnail" alt="Attachment Image">
+                                                                                                    </a>
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    <a href="@attachment.file_path" download class="btn btn-outline-primary w-100">
+                                                                                                        <i class="fas fa-file-alt"></i> @attachment.file_name
+                                                                                                    </a>
+                                                                                                }
+                                                                                            </div>
+                                                                                        }
+                                                                                    </div>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <p class="text-muted">No attachments available.</p>
+                                                                                }
+                                                                            </div>
+                                                                        </div>
+
+                                                                        @if (item.Updates.Any())
+                                                                        {
+                                                                            <hr>
+                                                                            <h6><i class="fas fa-comments"></i> Moderator Review</h6>
+                                                                            @foreach (var update in item.Updates)
+                                                                            {
+                                                                                <div class="border rounded p-3 bg-light mb-2">
+                                                                                    <p>@update.update_text</p>
+                                                                                    <small class="text-muted">@(update.updated_at?.ToString("MMM dd, yyyy") ?? "N/A")</small>
+                                                                                </div>
+                                                                                <h6><i class="fas fa-paperclip"></i> Attachments:</h6>
+                                                                                @if (update.attachments != null && update.attachments.Any())
+                                                                                {
+                                                                                    <div class="col-md-12 mb-2">
+                                                                                        <div class="list-group">
+                                                                                            <a href="@update.attachments" target="_blank" class="list-group-item list-group-item-action d-flex align-items-center">
+                                                                                                <i class="fas fa-folder text-warning me-2"></i>
+                                                                                                <span>@System.IO.Path.GetFileName(@update.attachments)</span>
+                                                                                            </a>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <p class="text-muted">No attachments available.</p>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                        <i class="fas fa-times"></i> Close
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- DataTables Initialization -->
+    <script>
+        jQuery.noConflict();
+        jQuery(document).ready(function ($) {
+            console.log("Document is ready. Initializing DataTable...");
+
+            if ($.fn.DataTable) {
+                $('#tbl').DataTable({
+                    "paging": true,  // Enable pagination
+                    "lengthMenu": [10, 25, 50, 60], // Page length options
+                    "ordering": true, // Enable sorting
+                    "info": true, // Show table info
+                    "searching": true, // Enable search bar
+                    "language": {
+                        "paginate": {
+                            "previous": "<i class='fas fa-chevron-left'></i>",
+                            "next": "<i class='fas fa-chevron-right'></i>"
+                        }
+                    }
+                });
+            } else {
+                console.error("DataTable is not defined. Check if DataTables JS is loaded properly.");
+            }
+        });
+    </script>
+</body>
+
+</html>

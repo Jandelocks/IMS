@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IMS.Controllers
 {
-    
+    [Authorize]
     public class ProfileController : Controller
     {
         private readonly ApplicationDbContext _context;

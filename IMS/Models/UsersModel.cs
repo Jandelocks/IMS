@@ -22,7 +22,8 @@ namespace IMS.Models
         [Required]
         public string role { get; set; }
 
-        public string department { get; set; }
+        [Required]
+        public string department { get; set; } // Acts as a foreign key reference
 
         public string? profile { get; set; }
 
@@ -35,7 +36,6 @@ namespace IMS.Models
         public string? token_forgot { get; set; }
 
         public bool isRistrict { get; set; }
-
         public virtual ICollection<IncidentsModel> Incidents { get; set; }
         public virtual ICollection<UpdatesModel> Updates { get; set; }
         public virtual ICollection<CommentsModel> Comments { get; set; }

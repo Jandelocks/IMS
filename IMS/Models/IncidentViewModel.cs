@@ -12,5 +12,8 @@
 
         public DepartmentsModel Departments { get; set; }
         public List<DepartmentsModel> Department { get; set; } = new(); 
+
+        public List<CommentsModel> Comments { get; set; } = new();
+        public CommentsModel Comment { get; set; }
     }
 }

@@ -150,23 +150,42 @@
                                     </select>
                                 </div>
 
-                                <!-- File Upload with Preview -->
+                                <!-- Existing Image Preview with Remove Button -->
+                                @if (Model.Attachments != null && Model.Attachments.Any())
+                                {
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-paperclip"></i> Current Attachments:</label>
+                                        <div class="d-flex flex-wrap gap-3">
+                                            @foreach (var attachment in Model.Attachments)
+                                            {
+                                                <div class="position-relative" style="max-width: 150px;">
+                                                    <img src="@attachment.file_path" alt="Attachment" class="img-thumbnail" style="width: 100%;">
+
+                                                    <!-- Remove Button -->
+                                                    <button type="button" class="btn-close position-absolute top-0 end-0"
+                                                            aria-label="Remove" onclick="removeAttachment(@attachment.attachments_id, this)"></button>
+                                                </div>
+                                            }
+                                        </div>
+                                        <!-- Hidden Input to Track Removed Attachments -->
+                                        <input type="hidden" id="removedAttachments" name="removedAttachments" value="">
+                                    </div>
+                                }
+
                                 <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-upload"></i> Upload New Evidence</label>
+                                    <label class="form-label"><i class="fas fa-upload"></i> Attach Evidence</label>
                                     <div class="input-group">
-                                        <input type="file" class="form-control" id="imageInput" name="image" accept="image/*">
+                                        <input type="file" class="form-control" id="imageInput" name="images" accept="image/*" multiple>
                                         <label class="input-group-text btn btn-outline-secondary" for="imageInput">
                                             <i class="fas fa-paperclip"></i>
                                         </label>
                                     </div>
-                                    <div class="form-text">Upload a new file if you want to replace the current one.</div>
+                                    <div class="form-text">Accepted file types: JPG, PNG, GIF (Max: 5MB per file).</div>
 
-                                    <!-- Image Preview -->
-                                    <div class="mt-3 text-center d-none" id="imagePreviewContainer">
-                                        <label class="form-label fw-bold">Image Preview:</label>
-                                        <div class="border p-2 rounded shadow-sm bg-light">
-                                            <img id="imagePreview" class="img-fluid rounded" style="max-width: 100%; height: auto;">
-                                        </div>
+                                    <!-- Image Previews -->
+                                    <div class="mt-3 d-none text-center" id="imagePreviewContainer">
+                                        <label class="form-label fw-bold">Image Previews:</label>
+                                        <div class="border p-2 rounded shadow-sm bg-light d-flex flex-wrap justify-content-center" id="imagePreviewWrapper"></div>
                                     </div>
                                 </div>
 
@@ -190,21 +209,40 @@
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
     <!-- Bootstrap 5 Image Preview Script -->
     <script>
-        document.getElementById("imageInput").addEventListener("change", function(event) {
-            const file = event.target.files[0];
-            const previewContainer = document.getElementById("imagePreviewContainer");
-            const previewImage = document.getElementById("imagePreview");
+        function removeAttachment(attachmentId, button) {
+            let removedAttachmentsInput = document.getElementById("removedAttachments");
+            let removedAttachments = removedAttachmentsInput.value ? removedAttachmentsInput.value.split(",") : [];
 
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    previewContainer.classList.remove("d-none");
-                    previewContainer.classList.add("d-block");
-                };
-                reader.readAsDataURL(file);
-            } else {
-                previewContainer.classList.add("d-none");
+            if (!removedAttachments.includes(attachmentId.toString())) {
+                removedAttachments.push(attachmentId.toString());
+                removedAttachmentsInput.value = removedAttachments.join(",");
+            }
+
+            // Remove the image preview container
+            button.closest(".position-relative").remove();
+        }
+    </script>
+    <script>
+        document.getElementById("imageInput").addEventListener("change", function(event) {
+            const container = document.getElementById("imagePreviewWrapper");
+            const previewContainer = document.getElementById("imagePreviewContainer");
+
+            container.innerHTML = ""; // Clear previous previews
+            previewContainer.classList.toggle("d-none", event.target.files.length === 0);
+
+            for (let file of event.target.files) {
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement("img");
+                        img.src = e.target.result;
+                        img.className = "img-fluid rounded m-1";
+                        img.style.maxWidth = "150px";
+                        img.style.height = "auto";
+                        container.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
             }
         });
     </script>

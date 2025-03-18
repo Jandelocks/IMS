@@ -26,6 +26,8 @@ namespace IMS.Models
         [Required]
         public string token { get; set; }
 
+        public int rating { get; set; }
+
         // Navigation properties
         public virtual IncidentsModel Incident { get; set; }
         public virtual UsersModel User { get; set; }

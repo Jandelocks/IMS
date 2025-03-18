@@ -27,6 +27,33 @@
 
     <!-- AdminLTE JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+
+    <style>
+        .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 5px;
+        }
+
+        .star-rating input {
+        display: none;
+        }
+
+        .star-rating label {
+        font-size: 30px;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.3s ease;
+        }
+
+        .star-rating input:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+        color: gold;
+        }
+    </style>
+
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -117,8 +144,17 @@
 
             <section class="content">
                 <div class="container-fluid">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                    }
                     <div class="card">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header bg-dark text-white">
                             <h3 class="card-title"><i class="fa-solid fa-clipboard-check"></i> Closed Incident Reports</h3>
                         </div>
                         <div class="card-body">
@@ -138,15 +174,37 @@
                                             {
                                                 var incident = item.Incident;
                                                 var attachments = item.Attachments;
+                                                var hasComments = item.Comments.Any();
                                                 <tr>
                                                     <td>@incident.tittle</td>
                                                     <td>@(incident.updated_at?.ToString("MMM dd, yyyy") ?? "N/A")</td>
                                                     <td>
                                                         <button type="button" class="btn btn-primary btn-sm"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#incidentModal-@incident.incident_id">
-                                                            <i class="fas fa-eye"></i>View details
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#incidentModal-@incident.incident_id">
+                                                            <i class="fas fa-eye"></i> View
                                                         </button>
+
+                                                        @if (!hasComments) // Show Feedback button only if comments exist
+                                                        {
+                                                            <button type="button" class="btn btn-success btn-sm"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#FeedbackModal-@incident.incident_id">
+                                                                <i class="fa-solid fa-comment"></i> Feedback
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button type="button" class="btn btn-success btn-sm"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#ViewFeedbackModal-@incident.incident_id">
+                                                                <i class="fa-solid fa-comment"></i> Feedback
+                                                            </button>
+                                                        }
+
+                                                        <a asp-controller="reports" asp-action="downloadincidentreport" asp-route-incidentId="@incident.incident_id" class="btn btn-secondary btn-sm">
+                                                            <i class="fa fa-download"></i> Download
+                                                        </a>
                                                     </td>
                                                 </tr>
 
@@ -190,18 +248,7 @@
                                                                             <p><strong><i class="fas fa-calendar-alt"></i> Reported At:</strong> @incident.reported_at</p>
                                                                         </div>
                                                                     </div>
-                                                                    <div class="row mb-3">
-                                                                        <div class="col-md-12">
-                                                                            <p>
-                                                                                <strong><i class="fas fa-info-circle"></i> Status:</strong>
-                                                                                <span class="badge
-                                                                                    @(@incident.status == "Pending" ? "bg-warning" :
-                                                                                      "bg-success")">
-                                                                                    @incident.status
-                                                                                </span>
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
+                                                                    
                                                                     <div class="row">
                                                                         <div class="col-md-12">
                                                                             <p><strong><i class="fas fa-file-alt"></i> Description:</strong></p>
@@ -277,9 +324,108 @@
                                                                 </div>
                                                             </div>
                                                             <div class="modal-footer">
-                                                                <a asp-controller="reports" asp-action="downloadincidentreport" asp-route-incidentId="@incident.incident_id" class="btn btn-primary">
-                                                                    <i class="fa fa-download"></i> Download Report
-                                                                </a>
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                                    <i class="fas fa-times"></i> Close
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Feedback Modal -->
+                                                <div class="modal fade" id="FeedbackModal-@incident.incident_id" tabindex="-1" aria-labelledby="FeedbackModalLabel-@incident.incident_id" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header bg-success text-white">
+                                                                <h5 class="modal-title" id="FeedbackModalLabel-@incident.incident_id">
+                                                                    <i class="fa-solid fa-comment"></i> Submit Feedback
+                                                                </h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <form method="post" asp-action="SubmitFeedback">
+                                                                    <input type="hidden" name="incidentId" value="@incident.incident_id" />
+
+                                                                    <!-- Feedback Textarea -->
+                                                                    <div class="mb-3">
+                                                                        <label for="feedbackText" class="form-label">Feedback</label>
+                                                                        <textarea class="form-control" id="feedbackText" name="feedbackText" rows="4" required></textarea>
+                                                                    </div>
+
+                                                                    <!-- Star Rating -->
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Rating</label>
+                                                                        <div class="star-rating">
+                                                                            <input type="radio" id="star5-@incident.incident_id" name="rating" value="5">
+                                                                            <label for="star5-@incident.incident_id" title="5 stars">&#9733;</label>
+
+                                                                            <input type="radio" id="star4-@incident.incident_id" name="rating" value="4">
+                                                                            <label for="star4-@incident.incident_id" title="4 stars">&#9733;</label>
+
+                                                                            <input type="radio" id="star3-@incident.incident_id" name="rating" value="3">
+                                                                            <label for="star3-@incident.incident_id" title="3 stars">&#9733;</label>
+
+                                                                            <input type="radio" id="star2-@incident.incident_id" name="rating" value="2">
+                                                                            <label for="star2-@incident.incident_id" title="2 stars">&#9733;</label>
+
+                                                                            <input type="radio" id="star1-@incident.incident_id" name="rating" value="1" required>
+                                                                            <label for="star1-@incident.incident_id" title="1 star">&#9733;</label>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- View Feedback Modal -->
+                                                <div class="modal fade" id="ViewFeedbackModal-@incident.incident_id" tabindex="-1" aria-labelledby="ViewFeedbackModalLabel-@incident.incident_id" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header bg-success text-white">
+                                                                <h5 class="modal-title" id="ViewFeedbackModalLabel-@incident.incident_id">
+                                                                    <i class="fa-solid fa-comment"></i> Feedback
+                                                                </h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                @if (item.Comments.Any())
+                                                                {
+                                                                    @foreach (var feedback in item.Comments)
+                                                                    {
+                                                                        <div class="border rounded p-3 bg-light mb-3">
+                                                                            <p><strong><i class="fas fa-calendar-alt"></i> Submitted on:</strong> @feedback.commented_at.ToString("MMM dd, yyyy")</p>
+
+                                                                            <p><strong><i class="fas fa-star"></i> Rating:</strong></p>
+                                                                            <div class="star-rating">
+                                                                                @for (int i = 1; i <= 5; i++)
+                                                                                {
+                                                                                    if (i <= feedback.rating)
+                                                                                    {
+                                                                                        <i class="fas fa-star text-warning"></i> <!-- Filled Star -->
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <i class="far fa-star text-muted"></i> <!-- Empty Star -->
+                                                                                    }
+                                                                                }
+                                                                            </div>
+
+                                                                            <p class="mt-2"><strong><i class="fas fa-comment-dots"></i> Feedback:</strong></p>
+                                                                            <div class="border rounded p-3 bg-white">
+                                                                                @feedback.comment_text
+                                                                            </div>
+                                                                        </div>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="text-muted">No feedback available.</p>
+                                                                }
+                                                            </div>
+                                                            <div class="modal-footer">
                                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                                                     <i class="fas fa-times"></i> Close
                                                                 </button>

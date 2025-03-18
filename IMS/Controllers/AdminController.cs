@@ -28,7 +28,7 @@ namespace IMS.Controllers
             var incidents = await _context.incidents.ToListAsync();
             ViewBag.TotalReports = incidents.Count;
             ViewBag.PendingReports = incidents.Count(i => i.status == "Pending");
-            ViewBag.ResolvedReports = incidents.Count(i => i.status == "Resolved");
+            ViewBag.ResolvedReports = incidents.Count(i => i.status == "Closed");
             ViewBag.InProgressReports = incidents.Count(i => i.status == "In Progress");
 
             return View("Index", incident); // Pass incident directly to the view
@@ -37,7 +37,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> Incidents()
         {
             // Fetch all incidents
-            var incidents = await _context.incidents.ToListAsync();
+            var incidents = await _context.incidents.Where(u => u.status != "Closed").ToListAsync();
 
             // Fetch attachments related to those incidents
             var attachments = await _context.attachments.ToListAsync();
@@ -243,9 +243,40 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> Department()
         {
-            var department = await _context.departments.ToListAsync();
-            return View("Department",department);
+            var departments = await _context.departments.ToListAsync();
+            
+            return View("Department", departments);
         }
+        public async Task<IActionResult> DepartmentDetails(string token)
+        {
+            // Find department using the token
+            var department = await _context.departments
+                .FirstOrDefaultAsync(d => d.token == token);
+
+            if (department == null)
+            {
+                return NotFound();
+            }
+
+            // Fetch users who belong to this department
+            var users = await _context.users
+                .Where(u => u.department == department.department)
+                .ToListAsync();
+
+            // Fetch all categories (or filter them based on department if needed)
+            var categories = await _context.categories.Where(i => i.department_id == department.department_id).ToListAsync();
+
+            // Prepare the view model
+            var viewModel = new IncidentViewModel
+            {
+                Users = users,
+                Categories = categories,
+                Department = new List<DepartmentsModel> { department } // Convert single item to List for compatibility
+            };
+
+            return View("DepartmentDetails", viewModel);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> AddDepartment(string department_name, string department_desc, IFormFile image)
@@ -370,6 +401,31 @@ namespace IMS.Controllers
             await _context.SaveChangesAsync();
             _logService.AddLog(userId, $"Update user role: {user.full_name} to {role}");
             return RedirectToAction("users");
+        }
+
+        public async Task<IActionResult> Closed()
+        {
+            int userId = _sessionService.GetUserId();
+
+            // Fetch incidents for the logged-in user
+            var incidents = await _context.incidents.Where(i =>i.status == "Closed").ToListAsync();
+
+            var updates = await _context.updates.ToListAsync();
+
+            var Comments = await _context.comments.ToListAsync();
+
+            var users = await _context.users.ToListAsync();
+
+            // Combine incidents, attachments, and updates using ViewModel
+            var resolvedlist = incidents.Select(i => new IncidentViewModel
+            {
+                Incident = i,
+                Updates = updates.Where(u => u.incident_id == i.incident_id).ToList(),
+                Comments = Comments.Where(c => c.incident_id == i.incident_id).ToList(),
+                User = users.FirstOrDefault(u => u.user_id == i.user_id)
+            }).ToList();
+
+            return View("Closed", resolvedlist);
         }
     }
 }

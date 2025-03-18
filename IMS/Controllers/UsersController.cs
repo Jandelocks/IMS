@@ -43,37 +43,19 @@ namespace IMS.Controllers
 
         [HttpPost]
         public async Task<IActionResult> submitreports(string tittle, string description, string priority,
-                                      string category, IFormFile image, int departmentId)
+                              string category, List<IFormFile> images, int departmentId)
         {
             int userId = _sessionService.GetUserId();
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)); // Secure token
 
-            // Validate if an image was uploaded
-            string filePath = "";
-            string fileName = "";
-
-            if (image != null && image.Length > 0)
+            // Ensure the directory exists
+            string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+            if (!Directory.Exists(uploadPath))
             {
-                // Ensure the directory exists
-                string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-                if (!Directory.Exists(uploadPath))
-                {
-                    Directory.CreateDirectory(uploadPath);
-                }
-
-                // Generate unique file name
-                string extension = Path.GetExtension(image.FileName);
-                fileName = $"{Guid.NewGuid()}{extension}";
-                filePath = Path.Combine(uploadPath, fileName);
-
-                // Save file to uploads folder
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(stream);
-                }
+                Directory.CreateDirectory(uploadPath);
             }
 
-            // Save report details
+            // Save report details first
             var submitreport = new Models.IncidentsModel
             {
                 user_id = userId,
@@ -91,28 +73,47 @@ namespace IMS.Controllers
             await _context.SaveChangesAsync(); // Save to database
 
             // Get the newly generated incident_id
-            int incidentId = submitreport.incident_id; // Ensure this property is auto-incremented in your model
+            int incidentId = submitreport.incident_id;
 
-            // Save file details in Attachments table if a file was uploaded
-            if (!string.IsNullOrEmpty(fileName))
+            // Process each uploaded image
+            if (images != null && images.Count > 0)
             {
-                var attach = new Models.AttachmentsModel
+                foreach (var image in images)
                 {
-                    user_id = userId,
-                    incident_id = incidentId, // ✅ Link attachment to the incident
-                    file_name = fileName,
-                    file_path = "/uploads/" + fileName,
-                    uploaded_at = DateTime.Now,
-                    token = token
-                };
+                    if (image.Length > 0)
+                    {
+                        // Generate unique file name
+                        string extension = Path.GetExtension(image.FileName);
+                        string fileName = $"{Guid.NewGuid()}{extension}";
+                        string filePath = Path.Combine(uploadPath, fileName);
 
-                _context.attachments.Add(attach);
-                await _context.SaveChangesAsync(); // Save to database
+                        // Save file to uploads folder
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await image.CopyToAsync(stream);
+                        }
+
+                        // Save file details in Attachments table
+                        var attach = new Models.AttachmentsModel
+                        {
+                            user_id = userId,
+                            incident_id = incidentId, // ✅ Link attachment to the incident
+                            file_name = fileName,
+                            file_path = "/uploads/" + fileName,
+                            uploaded_at = DateTime.Now,
+                            token = token
+                        };
+
+                        _context.attachments.Add(attach);
+                    }
+                }
+                await _context.SaveChangesAsync(); // Save all attachments in the database
             }
 
             _logService.AddLog(userId, $"Created an incident: {tittle}");
             return RedirectToAction("dashboard"); // Redirect to Dashboard
         }
+
 
         public async Task<IActionResult> Reports()
         {
@@ -166,15 +167,12 @@ namespace IMS.Controllers
         //Update
         public async Task<IActionResult> Edit(string token)
         {
-            // Step 1: Retrieve the incident using the token
             var incident = await _context.incidents.FirstOrDefaultAsync(i => i.token == token);
 
             if (incident == null)
             {
                 return NotFound("Incident not found");
             }
-
-            // Step 2: Find the department using the incident's department_id
             var department = await _context.departments.FirstOrDefaultAsync(d => d.department_id == incident.department_id);
 
             if (department == null)
@@ -182,14 +180,17 @@ namespace IMS.Controllers
                 return NotFound("Department not found");
             }
 
-            // Step 3: Retrieve categories belonging to the department
             var categories = await _context.categories
                 .Where(c => c.department_id == department.department_id)
                 .ToListAsync();
 
-            // Step 4: Pass data to the ViewModel
+            var attachments = await _context.attachments
+                .Where(a => a.incident_id == incident.incident_id)
+                .ToListAsync();
+
             var viewModel = new IncidentViewModel
             {
+                Attachments = attachments,
                 Incident = incident,
                 Categories = categories
             };
@@ -199,7 +200,7 @@ namespace IMS.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Updateinc(int Id, string tittle, string description,
-                                           string category, string priority, IFormFile image)
+                            string category, string priority, List<IFormFile> images, string removedAttachments)
         {
             int userId = _sessionService.GetUserId();
             var incident = _context.incidents.Find(Id);
@@ -208,71 +209,77 @@ namespace IMS.Controllers
                 return NotFound();
             }
 
+            // Update incident details
             incident.tittle = tittle;
             incident.description = description;
             incident.category = category;
             incident.priority = priority;
 
-            _logService.AddLog(userId, $"Update incident: {tittle}");
+            _logService.AddLog(userId, $"Updated incident: {tittle}");
 
-            _context.SaveChanges(); // Save updated incident details
+            await _context.SaveChangesAsync();
 
-            string filePath = "";
-            string fileName = "";
-
-            if (image != null && image.Length > 0)
+            // Handle removed attachments
+            if (!string.IsNullOrEmpty(removedAttachments))
             {
-                // Ensure the directory exists
+                var removedIds = removedAttachments.Split(',').Select(int.Parse).ToList();
+                var attachmentsToRemove = _context.attachments.Where(a => removedIds.Contains(a.attachments_id)).ToList();
+
+                foreach (var attachment in attachmentsToRemove)
+                {
+                    // Delete file from server
+                    string oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", attachment.file_path.TrimStart('/'));
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+
+                    // Remove from database
+                    _context.attachments.Remove(attachment);
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            // Handle multiple image uploads
+            if (images != null && images.Count > 0)
+            {
                 string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
                 if (!Directory.Exists(uploadPath))
                 {
                     Directory.CreateDirectory(uploadPath);
                 }
 
-                // Generate unique file name
-                string extension = Path.GetExtension(image.FileName);
-                fileName = $"{Guid.NewGuid()}{extension}";
-                filePath = Path.Combine(uploadPath, fileName);
-
-                // Save file to uploads folder
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                foreach (var image in images)
                 {
-                    await image.CopyToAsync(stream);
-                }
-
-                // Check if an attachment already exists for this incident
-                var existingAttachment = _context.attachments.FirstOrDefault(a => a.incident_id == Id);
-                if (existingAttachment != null)
-                {
-                    // **DELETE OLD IMAGE** from server
-                    string oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existingAttachment.file_path.TrimStart('/'));
-                    if (System.IO.File.Exists(oldFilePath))
+                    if (image.Length > 0)
                     {
-                        System.IO.File.Delete(oldFilePath);
+                        string extension = Path.GetExtension(image.FileName);
+                        string fileName = $"{Guid.NewGuid()}{extension}";
+                        string filePath = Path.Combine(uploadPath, fileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await image.CopyToAsync(stream);
+                        }
+
+                        // Save each file as a separate attachment
+                        var attach = new Models.AttachmentsModel
+                        {
+                            user_id = userId,
+                            incident_id = Id,
+                            file_name = fileName,
+                            file_path = "/uploads/" + fileName,
+                            uploaded_at = DateTime.Now,
+                            token = incident.token
+                        };
+                        _context.attachments.Add(attach);
                     }
+                }
 
-                    // Update existing attachment
-                    existingAttachment.file_name = fileName;
-                    existingAttachment.file_path = "/uploads/" + fileName;
-                    existingAttachment.uploaded_at = DateTime.Now;
-                }
-                else
-                {
-                    // Add new attachment record
-                    var attach = new Models.AttachmentsModel
-                    {
-                        user_id = userId,
-                        incident_id = Id,
-                        file_name = fileName,
-                        file_path = "/uploads/" + fileName,
-                        uploaded_at = DateTime.Now,
-                        token = incident.token
-                    };
-                    _context.attachments.Add(attach);
-                }
-                await _context.SaveChangesAsync(); // Save attachment to database
+                await _context.SaveChangesAsync();
             }
-            
+
             return RedirectToAction("Reports");
         }
 
@@ -325,10 +332,14 @@ namespace IMS.Controllers
                                        .Where(u => incidents.Select(i => i.incident_id).Contains(u.incident_id))
                                        .ToListAsync();
 
+            var comments = await _context.comments
+                                        .ToListAsync();
+
             // Combine incidents, attachments, and updates using ViewModel
             var resolvedlist = incidents.Select(i => new IncidentViewModel
             {
-                Incident = i,               
+                Incident = i,
+                Comments = comments.Where(c => c.incident_id == i.incident_id).ToList(),
                 Updates = updates.Where(u => u.incident_id == i.incident_id).ToList()
             }).ToList();
 
@@ -339,6 +350,31 @@ namespace IMS.Controllers
         {
             var departments = await _context.departments.ToListAsync();
             return View(departments);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SubmitFeedback(int incidentId, string feedbackText, int rating)
+        {
+            var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+            int userId = _sessionService.GetUserId();
+
+            var feedback = new CommentsModel
+            {
+                incident_id = incidentId,
+                user_id = userId,
+                comment_text = feedbackText,
+                rating = rating,
+                commented_at = DateTime.Now,
+                token = token
+            };
+
+            _context.comments.Add(feedback);
+            await _context.SaveChangesAsync();
+
+            _logService.AddLog(userId, "Submitted feedback");
+
+            TempData["SuccessMessage"] = "Feedback submitted successfully.";
+            return RedirectToAction("Closed", "Users");
         }
     }
 }

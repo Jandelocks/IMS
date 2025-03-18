@@ -86,6 +86,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a asp-action="Closed" class="nav-link">
+                                <i class="nav-icon fa-solid fa-clipboard-check"></i>
+                                <p>Closed Cases</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a asp-action="users" class="nav-link">
                                 <i class="nav-icon fas fa-users"></i>
                                 <p>Users</p>
@@ -292,7 +298,7 @@
                                                                     <div class="col-md-6">
                                                                         <p>
                                                                             <strong><i class="fa-solid fa-building"></i>Department: </strong>
-                                                                            @(item.User != null ? item.User.department : "Not Assigned")
+                                                                            @(item.Incident != null ? item.Departments.department : "Not Assigned")
                                                                         </p>
                                                                     </div>
                                                                 </div>

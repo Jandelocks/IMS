@@ -130,14 +130,18 @@ namespace IMS.Controllers
                                        .ToListAsync();
 
             var attachments = await _context.attachments.ToListAsync();
+
             var users = await _context.users.ToListAsync(); // Fetch all users
+
+            var Comments = await _context.comments.ToListAsync();
             // Combine incidents and only fetch attachments that match the incident_id
             var incidentList = incidents.Select(i => new IncidentViewModel
             {
                 Incident = i,
                 Attachments = attachments.Where(a => a.incident_id == i.incident_id).ToList(),
                 User = users.FirstOrDefault(u => u.user_id == i.user_id),
-                Updates = updates.Where(u => u.incident_id == i.incident_id).ToList()
+                Updates = updates.Where(u => u.incident_id == i.incident_id).ToList(),
+                Comments = Comments.Where(c => c.incident_id == i.incident_id).ToList(),
             }).ToList();
 
             return View("Reports", incidentList);

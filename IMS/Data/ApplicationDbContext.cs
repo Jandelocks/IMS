@@ -107,7 +107,7 @@ namespace IMS.Data
                    department = "Information Technology (IT) Department",
                    description = "Responsible for maintaining and securing the organization's IT infrastructure, ensuring smooth operation of systems, networks, and software.",
                    token = "EYcLYD+5MDZefgLOMIoszTVmLL6YuHDc/r7gSnhjOMI=",
-                   ImagePath = null
+                   ImagePath = "/departments/IT.webp"
                },
                new DepartmentsModel
                {
@@ -115,7 +115,7 @@ namespace IMS.Data
                    department = "Human Resources (HR) Department",
                    description = "Handles employee-related issues, including recruitment, workplace policies, and conflict resolution.",
                    token = "1L9JFDAOhdRAfr8WTE2TFseSIbmFznhF8G+YQYeQztU=",
-                   ImagePath = null
+                   ImagePath = "/departments/hr.webp"
                },
                new DepartmentsModel
                {
@@ -123,7 +123,7 @@ namespace IMS.Data
                    department = "Facilities Management Department",
                    description = "Ensures the maintenance and safety of physical office spaces, including repairs and environmental concerns.",
                    token = "6G7QdUkik1mqrvrGW7onUkJgMDX0uWCx8eO5CGPAafI=",
-                   ImagePath = null
+                   ImagePath = "/departments/facilities.webp"
                },
                new DepartmentsModel
                {
@@ -131,7 +131,7 @@ namespace IMS.Data
                    department = "Customer Support Department",
                    description = "Addresses customer complaints, inquiries, and service-related issues to maintain customer satisfaction.",
                    token = "WKGIl7ur+NipjdwcCelAQMAWgwI4+yUKRAUJ+rwnUrI=",
-                   ImagePath = null
+                   ImagePath = "/departments/customer.webp"
                },
                new DepartmentsModel
                {
@@ -139,7 +139,7 @@ namespace IMS.Data
                    department = "Health and Safety Department",
                    description = "Ensures workplace safety, compliance with health regulations, and handles medical emergencies.",
                    token = "CfNwST/Pp0U9H/1bbkTQOQ308K05oiLvpcTGdLosZNA=",
-                   ImagePath = null
+                   ImagePath = "/departments/health and safety.webp"
                }
            );
 

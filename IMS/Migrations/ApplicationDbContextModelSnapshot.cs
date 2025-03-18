@@ -270,6 +270,9 @@ namespace IMS.Migrations
                     b.Property<int>("incident_id")
                         .HasColumnType("int");
 
+                    b.Property<int>("rating")
+                        .HasColumnType("int");
+
                     b.Property<string>("token")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -299,7 +302,7 @@ namespace IMS.Migrations
 
                     b.Property<string>("department")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("description")
                         .IsRequired()
@@ -570,7 +573,7 @@ namespace IMS.Migrations
 
                     b.Property<string>("department")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("email")
                         .IsRequired()
@@ -602,6 +605,8 @@ namespace IMS.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("user_id");
+
+                    b.HasIndex("department");
 
                     b.ToTable("users");
 
@@ -803,11 +808,25 @@ namespace IMS.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("IMS.Models.UsersModel", b =>
+                {
+                    b.HasOne("IMS.Models.DepartmentsModel", "DepartmentNavigation")
+                        .WithMany("Users")
+                        .HasForeignKey("department")
+                        .HasPrincipalKey("department")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DepartmentNavigation");
+                });
+
             modelBuilder.Entity("IMS.Models.DepartmentsModel", b =>
                 {
                     b.Navigation("Categories");
 
                     b.Navigation("Incidents");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("IMS.Models.IncidentsModel", b =>

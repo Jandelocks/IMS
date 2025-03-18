@@ -86,6 +86,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a asp-action="Closed" class="nav-link">
+                                <i class="nav-icon fa-solid fa-clipboard-check"></i>
+                                <p>Closed Cases</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a asp-action="users" class="nav-link">
                                 <i class="nav-icon fas fa-users"></i>
                                 <p>Users</p>
@@ -150,6 +156,9 @@
                                                     <td>@department.department</td>
                                                     <td>@department.description</td>
                                                     <td>
+                                                        <a asp-action="DepartmentDetails" asp-route-token="@department.token" class="btn btn-primary btn-sm mb-1">
+                                                            <i class="fa-solid fa-eye"></i> View
+                                                        </a>
                                                         <button class="btn btn-warning btn-sm mb-1"
                                                                 data-id="@department.department_id"
                                                                 data-name="@department.department"

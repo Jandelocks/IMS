@@ -39,7 +39,10 @@ namespace IMS.Services
                         .Select(m => m.department)
                         .FirstOrDefault(), // Moderator's Department
                     Updates = _context.updates.Where(u => u.incident_id == incidentId)
-                        .Select(u => new { u.update_text, u.updated_at }).ToList()
+                        .Select(u => new { u.update_text, u.updated_at }).ToList(),
+                    Comments = _context.comments.Where(c => c.incident_id == incidentId)
+                        .Select(c => new { c.comment_text, c.commented_at, c.rating, User = c.User.full_name })
+                        .ToList() // Fetching user feedback with rating
                 })
                 .FirstOrDefault();
 
@@ -56,6 +59,7 @@ namespace IMS.Services
 
                 Font titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16);
                 Font normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 12);
+                Font subHeaderFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14);
 
                 document.Add(new Paragraph("Incident Report", titleFont));
                 document.Add(new Paragraph($"Incident ID: {incident.incident_id}", normalFont));
@@ -65,12 +69,10 @@ namespace IMS.Services
                 document.Add(new Paragraph($"Priority: {incident.priority}", normalFont));
                 document.Add(new Paragraph($"Reported By: {incident.UserFullName}", normalFont));
                 document.Add(new Paragraph($"Reported At: {incident.reported_at.ToString("MMMM dd, yyyy, hh:mm tt")}", normalFont));
-                
-                //document.Add(new Paragraph("\n"));
+                document.Add(new Paragraph("\n"));
 
-                
-                document.Add(new Paragraph("\nUpdates", titleFont));
                 // Moderator Details
+                document.Add(new Paragraph("Moderator Information", subHeaderFont));
                 if (!string.IsNullOrEmpty(incident.ModeratorFullName))
                 {
                     document.Add(new Paragraph($"Assigned Moderator: {incident.ModeratorFullName}", normalFont));
@@ -80,12 +82,41 @@ namespace IMS.Services
                 {
                     document.Add(new Paragraph("Assigned Moderator: Not Assigned", normalFont));
                 }
-                // Updates Section (Comment first, then date below)
-                foreach (var update in incident.Updates)
+                document.Add(new Paragraph("\n"));
+
+                // Updates Section
+                document.Add(new Paragraph("Updates", subHeaderFont));
+                if (incident.Updates.Any())
                 {
-                    document.Add(new Paragraph($"Comment: {update.update_text}", normalFont));
-                    document.Add(new Paragraph($"Date: {update.updated_at?.ToString("MMMM dd, yyyy, hh:mm tt")}", normalFont));
-                    document.Add(new Paragraph("\n")); // Add space between updates
+                    foreach (var update in incident.Updates)
+                    {
+                        document.Add(new Paragraph($"Comment: {update.update_text}", normalFont));
+                        document.Add(new Paragraph($"Date: {update.updated_at?.ToString("MMMM dd, yyyy, hh:mm tt")}", normalFont));
+                        document.Add(new Paragraph("\n")); // Space between updates
+                    }
+                }
+                else
+                {
+                    document.Add(new Paragraph("No updates available.", normalFont));
+                }
+                document.Add(new Paragraph("\n"));
+
+                // User Feedback Section with Ratings
+                document.Add(new Paragraph("User Feedback & Ratings", subHeaderFont));
+                if (incident.Comments.Any())
+                {
+                    foreach (var comment in incident.Comments)
+                    {
+                        document.Add(new Paragraph($"User: {comment.User}", normalFont));
+                        document.Add(new Paragraph($"Feedback: {comment.comment_text}", normalFont));
+                        document.Add(new Paragraph($"Rating: {comment.rating} / 5", normalFont)); // ⭐ Added Rating
+                        document.Add(new Paragraph($"Date: {comment.commented_at.ToString("MMMM dd, yyyy, hh:mm tt")}", normalFont));
+                        document.Add(new Paragraph("\n")); // Space between feedbacks
+                    }
+                }
+                else
+                {
+                    document.Add(new Paragraph("No user feedback available.", normalFont));
                 }
 
                 document.Close();
