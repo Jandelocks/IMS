@@ -46,6 +46,7 @@
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto">
+                @await Html.PartialAsync("_Notification")
                 <li class="nav-item">
                     <a asp-controller="profile" asp-action="" class="nav-link"><i class="fas fa-user"></i> Profile</a>
                 </li>
@@ -74,6 +75,7 @@
                     }
                 </span>
             </a>
+
             <div class="sidebar">
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
@@ -95,6 +97,12 @@
                                 <p>Review Reports</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a asp-action="Department" asp-route-department="@ViewBag.UserDepartment" class="nav-link">
+                                <i class="nav-icon fa-solid fa-building-user"></i>
+                                <p>Department</p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -106,7 +114,7 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0 fw-bold">Moderator Dashboard</h1>
+                            <h1 class="m-0 fw-bold">Dashboard</h1>
                         </div>
                     </div>
                 </div>
@@ -159,6 +167,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="row">
                         <div class="col-6">
                             <div class="card">
@@ -185,8 +194,9 @@
                                                             <td>@incident.tittle</td>
                                                             <td>@incident.category</td>
                                                             <td>@incident.status</td>
-                                                            
-                                                        </tr> 
+
+                                                        </tr>
+
                                                     }
                                                 }
                                             </tbody>
@@ -204,7 +214,7 @@
                                     <canvas id="moderatorChart" data-userid="@userId"></canvas>
                                 </div>
                             </div>
-                         </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -234,6 +244,25 @@
             }
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            var message = "@TempData["Greeting"]";
+            if (message) {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    icon: "success",
+                    title: message,
+                    showConfirmButton: false,
+                    timer: 5000,  // Auto-close in 3 seconds
+                    timerProgressBar: true
+                });
+            }
+        });
+    </script>
+
 </body>
 
 </html>

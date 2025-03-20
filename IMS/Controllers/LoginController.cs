@@ -10,6 +10,7 @@ using System.Net.Mail;
 using System.Net;
 using IMS.Services;
 using reCAPTCHA.AspNetCore;
+using Org.BouncyCastle.Ocsp;
 
 namespace IMS.Controllers
 {
@@ -20,12 +21,14 @@ namespace IMS.Controllers
         private readonly LogService _logService;
         private readonly IRecaptchaService _recaptchaService;
         private readonly SessionService _sessionService;
-        public LoginController(ApplicationDbContext context, LogService logService, IRecaptchaService recaptchaService, SessionService sessionService)
+        private readonly NotificationService _notificationService;
+        public LoginController(ApplicationDbContext context, LogService logService, IRecaptchaService recaptchaService, SessionService sessionService, NotificationService notificationService)
         {
             _context = context;
             _logService = logService;
             _recaptchaService = recaptchaService;
             _sessionService = sessionService;
+            _notificationService = notificationService;
         }
 
 
@@ -248,7 +251,8 @@ namespace IMS.Controllers
             }
 
             _logService.AddLog(user.user_id, "User logged in");
-
+            await _notificationService.SendNotification(user.user_id, "You have logged in");
+            TempData["Greeting"] = $"Welcome back, {user.full_name}!";
             return user.role switch
             {
                 "admin" => Redirect("/Admin/"),
@@ -286,7 +290,7 @@ namespace IMS.Controllers
             // Remove the token from cookies and session
             Response.Cookies.Delete("UserToken");
             HttpContext.Session.Clear();
-
+            _logService.AddLog(userId, "User logged out");
             return Redirect("/login");
         }
 

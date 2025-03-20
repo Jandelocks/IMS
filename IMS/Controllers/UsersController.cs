@@ -15,11 +15,13 @@ namespace IMS.Controllers
         private readonly ApplicationDbContext _context;
         private readonly LogService _logService;
         private readonly SessionService _sessionService;
-        public UsersController(ApplicationDbContext context, LogService logService, SessionService sessionService)
+        private readonly NotificationService _notificationService;
+        public UsersController(ApplicationDbContext context, LogService logService, SessionService sessionService, NotificationService notificationService)
         {
             _context = context;
             _logService = logService;
             _sessionService = sessionService;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
@@ -108,6 +110,13 @@ namespace IMS.Controllers
                     }
                 }
                 await _context.SaveChangesAsync(); // Save all attachments in the database
+            }
+
+            var user = await _context.users.FindAsync(userId);
+            if (user != null)
+            {
+                await _notificationService.SendNotification(1, $"New incident \"{tittle}\" ");
+                await _notificationService.SendNotification(userId, $"Thank You, Your report is received.");
             }
 
             _logService.AddLog(userId, $"Created an incident: {tittle}");

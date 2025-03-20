@@ -131,14 +131,13 @@
                                 <!-- Incident Category -->
                                 <div class="mb-3">
                                     <label class="form-label"><i class="fas fa-list"></i> Incident Category</label>
-                            
-                                        <select class="form-select" name="category" required>
+                                    <select class="form-select" name="category" required>
                                         <option value="" disabled selected>Select Category</option>
                                         @foreach (var cat in Model)
                                         {
                                             <option value="@cat.category_name">@cat.category_name</option>
                                         }
-                                        </select>
+                                    </select>
                                     <div class="invalid-feedback">Please select a category.</div>
                                 </div>
 

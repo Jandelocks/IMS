@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
+using System.Security.Claims;
 using System.Security.Cryptography;
 
 namespace IMS.Controllers
@@ -33,13 +35,14 @@ namespace IMS.Controllers
             ViewBag.ResolvedReports = userReports.Count(i => i.status == "Resolved");
             ViewBag.ClosedReports = userReports.Count(i => i.status == "Closed");
             ViewBag.UserId = userId;
+            ViewBag.UserDepartment = GetUserDepartment();
             return View("Index", userReports);
         }
 
         public async Task<IActionResult> manageIncidents()
         {
             int userId = _sessionService.GetUserId();
-
+            ViewBag.UserDepartment = GetUserDepartment();
             var incidents = await _context.incidents
                                           .Where(i => i.assigned_too == userId)
                                           .Where(i => i.status != "Closed")
@@ -120,6 +123,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> reviewReports()
         {
             int userId = _sessionService.GetUserId();
+            ViewBag.UserDepartment = GetUserDepartment();
             var incidents = await _context.incidents
                                           .Where(i => i.assigned_too == userId)
                                           .Where(i => i.status == "Closed")
@@ -145,6 +149,47 @@ namespace IMS.Controllers
             }).ToList();
 
             return View("Reports", incidentList);
+        }
+        public async Task<IActionResult> Department(string department)
+        {
+            var departmentUsers = await _context.departments
+                .FirstOrDefaultAsync(d => d.department == department);
+
+            if (departmentUsers == null)
+            {
+                return NotFound();
+            }
+
+            var users = await _context.users
+                .Where(u => u.department == departmentUsers.department) 
+                .ToListAsync();
+
+            var categories = await _context.categories
+                .Where(i => i.department_id == departmentUsers.department_id) 
+                .ToListAsync();
+
+            var viewModel = new IncidentViewModel
+            {
+                Users = users,
+                Categories = categories,
+                Department = new List<DepartmentsModel> { departmentUsers } 
+            };
+
+            return View("Department", viewModel);
+        }
+
+        private string GetUserDepartment()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Get logged-in user ID
+            if (userId == null)
+                return "N/A"; // Return "N/A" if user is not logged in
+
+            var userDepartment = _context.users
+                .Where(u => u.user_id.ToString() == userId) // Convert user_id to string for comparison
+                .Select(u => u.department)
+                .FirstOrDefault(); // Fetch department from DB
+
+            return userDepartment ?? "N/A"; // Default to "N/A" if department is null
         }
     }
 }

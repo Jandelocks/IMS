@@ -302,7 +302,7 @@ namespace IMS.Migrations
 
                     b.Property<string>("department")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("description")
                         .IsRequired()
@@ -319,6 +319,7 @@ namespace IMS.Migrations
                         new
                         {
                             department_id = 12,
+                            ImagePath = "/departments/IT.webp",
                             department = "Information Technology (IT) Department",
                             description = "Responsible for maintaining and securing the organization's IT infrastructure, ensuring smooth operation of systems, networks, and software.",
                             token = "EYcLYD+5MDZefgLOMIoszTVmLL6YuHDc/r7gSnhjOMI="
@@ -326,6 +327,7 @@ namespace IMS.Migrations
                         new
                         {
                             department_id = 13,
+                            ImagePath = "/departments/hr.webp",
                             department = "Human Resources (HR) Department",
                             description = "Handles employee-related issues, including recruitment, workplace policies, and conflict resolution.",
                             token = "1L9JFDAOhdRAfr8WTE2TFseSIbmFznhF8G+YQYeQztU="
@@ -333,6 +335,7 @@ namespace IMS.Migrations
                         new
                         {
                             department_id = 14,
+                            ImagePath = "/departments/facilities.webp",
                             department = "Facilities Management Department",
                             description = "Ensures the maintenance and safety of physical office spaces, including repairs and environmental concerns.",
                             token = "6G7QdUkik1mqrvrGW7onUkJgMDX0uWCx8eO5CGPAafI="
@@ -340,6 +343,7 @@ namespace IMS.Migrations
                         new
                         {
                             department_id = 15,
+                            ImagePath = "/departments/customer.webp",
                             department = "Customer Support Department",
                             description = "Addresses customer complaints, inquiries, and service-related issues to maintain customer satisfaction.",
                             token = "WKGIl7ur+NipjdwcCelAQMAWgwI4+yUKRAUJ+rwnUrI="
@@ -347,6 +351,7 @@ namespace IMS.Migrations
                         new
                         {
                             department_id = 16,
+                            ImagePath = "/departments/health and safety.webp",
                             department = "Health and Safety Department",
                             description = "Ensures workplace safety, compliance with health regulations, and handles medical emergencies.",
                             token = "CfNwST/Pp0U9H/1bbkTQOQ308K05oiLvpcTGdLosZNA="
@@ -523,6 +528,34 @@ namespace IMS.Migrations
                     b.ToTable("logs");
                 });
 
+            modelBuilder.Entity("IMS.Models.NotificationsModel", b =>
+                {
+                    b.Property<int>("notification_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("notification_id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("user_id")
+                        .HasColumnType("int");
+
+                    b.HasKey("notification_id");
+
+                    b.HasIndex("user_id");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("IMS.Models.UpdatesModel", b =>
                 {
                     b.Property<int>("update_id")
@@ -573,7 +606,7 @@ namespace IMS.Migrations
 
                     b.Property<string>("department")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("email")
                         .IsRequired()
@@ -605,8 +638,6 @@ namespace IMS.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("user_id");
-
-                    b.HasIndex("department");
 
                     b.ToTable("users");
 
@@ -789,6 +820,15 @@ namespace IMS.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("IMS.Models.NotificationsModel", b =>
+                {
+                    b.HasOne("IMS.Models.UsersModel", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("user_id");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("IMS.Models.UpdatesModel", b =>
                 {
                     b.HasOne("IMS.Models.IncidentsModel", "Incident")
@@ -808,25 +848,11 @@ namespace IMS.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("IMS.Models.UsersModel", b =>
-                {
-                    b.HasOne("IMS.Models.DepartmentsModel", "DepartmentNavigation")
-                        .WithMany("Users")
-                        .HasForeignKey("department")
-                        .HasPrincipalKey("department")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DepartmentNavigation");
-                });
-
             modelBuilder.Entity("IMS.Models.DepartmentsModel", b =>
                 {
                     b.Navigation("Categories");
 
                     b.Navigation("Incidents");
-
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("IMS.Models.IncidentsModel", b =>
@@ -841,6 +867,8 @@ namespace IMS.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Incidents");
+
+                    b.Navigation("Notifications");
 
                     b.Navigation("Updates");
                 });

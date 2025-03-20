@@ -6,15 +6,20 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using reCAPTCHA.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ==============================
+// 1. Add services to the container
+// ==============================
+
+// Add Controllers with Authorization Policy
 builder.Services.AddControllersWithViews(options =>
 {
     var policy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
-//options.Filters.Add(new AuthorizeFilter(policy));
+    //options.Filters.Add(new AuthorizeFilter(policy));
 });
 
 // Configure session
@@ -25,12 +30,12 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Add authentication using cookies
+// Authentication & Authorization
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Login";
-        options.AccessDeniedPath = "/Auth/AccessDenied";
+        options.AccessDeniedPath = "/Login";
     });
 
 builder.Services.AddAuthorization(options =>
@@ -40,59 +45,61 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Moderator", policy => policy.RequireRole("moderator"));
 });
 
-// Add reCAPTCHA service
+// reCAPTCHA
 builder.Services.Configure<RecaptchaSettings>(builder.Configuration.GetSection("GoogleReCaptcha"));
 builder.Services.AddTransient<IRecaptchaService, RecaptchaService>();
 
-//Reports
+// Reports Service
 builder.Services.AddScoped<ReportService>();
 
-// Add SQL Server database connection
+// Database Connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register LogService
+// Logging & Session Services
 builder.Services.AddScoped<LogService>();
-
-// Register SessionService
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<SessionService>();
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+// SignalR (Real-time Notifications)
+builder.Services.AddSignalR();
+builder.Services.AddScoped<NotificationService>();
 
-// Add session services
-builder.Services.AddSession();
-builder.Services.AddDistributedMemoryCache(); // Required for session storage
+// Add Distributed Cache (Required for Session)
+builder.Services.AddDistributedMemoryCache();
 
+// ==============================
+// 2. Build the app
+// ==============================
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ==============================
+// 3. Configure the HTTP Request Pipeline
+// ==============================
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
+// Middleware Order (IMPORTANT!)
 app.UseHttpsRedirection();
-app.UseRouting(); 
-
+app.UseStaticFiles();  // Serve static files (CSS, JS, etc.)
+app.UseRouting();
+app.UseSession(); // Ensure session is enabled before authentication
 app.UseAuthentication();
-app.UseAuthorization();  
+app.UseAuthorization();
 
-app.UseSession(); 
-
+// Map static assets and routes
 app.MapStaticAssets();
-
 app.MapControllerRoute(
-    //name: "default",
-    //pattern: "{controller=Home}/{action=Index}/{id?}")
-    //.WithStaticAssets();
-
     name: "default",
-    pattern: "{controller=Homepage}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Homepage}/{action=Index}/{id?}"
+).WithStaticAssets();
 
+// SignalR Hub Mapping
+app.MapHub<NotificationHub>("/notificationHub");
 
+// Run the application
 app.Run();

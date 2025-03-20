@@ -18,8 +18,10 @@ namespace IMS.Data
         public DbSet<CategoriesModel> categories { get; set; }
         public DbSet<AttachmentsModel> attachments { get; set; }
         public DbSet<DepartmentsModel> departments { get; set; }
+        public DbSet<NotificationsModel> Notifications { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             // Department -> Categories (One-to-Many)
             modelBuilder.Entity<CategoriesModel>()
                 .HasOne(c => c.Department)
@@ -373,7 +375,7 @@ namespace IMS.Data
                     updated_at = null,
                     department_id = 12
                 }
-            );   
+            );
         }
     }
 }

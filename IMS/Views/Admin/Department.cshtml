@@ -18,9 +18,6 @@
     <!-- jQuery (Must be before DataTables) -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-    <!-- DataTables JS (Must be after jQuery) -->
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
@@ -42,6 +39,7 @@
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto">
+                @await Html.PartialAsync("_Notification")
                 <li class="nav-item">
                     <a asp-controller="profile" asp-action="" class="nav-link"><i class="fas fa-user"></i> Profile</a>
                 </li>
@@ -260,7 +258,7 @@
             if ($.fn.DataTable) {
                 $('#Cattable').DataTable({
                     "paging": true,  // Enable pagination
-                    "lengthMenu": [10, 25, 50, 60], // Page length options
+                    "lengthMenu": [5, 10, 15, 20], // Page length options
                     "ordering": true, // Enable sorting
                     "info": true, // Show table info
                     "searching": true, // Enable search bar

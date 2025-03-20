@@ -30,6 +30,7 @@
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto">
+                @await Html.PartialAsync("_Notification")
                 <li class="nav-item">
                     <a asp-controller="profile" asp-action="" class="nav-link"><i class="fas fa-user"></i> Profile</a>
                 </li>
@@ -275,5 +276,26 @@
     <!-- Bootstrap and AdminLTE JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+    $(document).ready(function () {
+        var message = "@TempData["Greeting"]";
+        if (message) {
+            Swal.fire({
+                toast: true,
+                position: "top-end",
+                icon: "success",
+                title: message,
+                showConfirmButton: false,
+                timer: 5000,  // Auto-close in 3 seconds
+                timerProgressBar: true
+            });
+        }
+    });
+    </script>
+
 </body>
 </html>

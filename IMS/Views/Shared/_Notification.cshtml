@@ -1,0 +1,75 @@
+﻿<li class="nav-item dropdown">
+    <a class="nav-link" data-toggle="dropdown" href="#">
+        <i class="far fa-bell"></i>
+        <span id="notifCount" class="badge badge-warning navbar-badge">0</span>
+    </a>
+    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+        <span class="dropdown-header"><span id="notifText">No new notifications</span></span>
+        <div class="dropdown-divider"></div>
+        <div id="notifList"></div>
+    </div>
+</li>
+<!-- jQuery & Bootstrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+<script>
+    var connection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationHub")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.start().catch(err => console.error("SignalR Connection Error:", err));
+
+    connection.on("ReceiveNotification", function (message) {
+        loadNotifications(); 
+    });
+
+    async function loadNotifications() 
+    {
+        try {
+            let response = await fetch("/api/notification/unread");
+            let notifications = await response.json();
+
+            let countElem = document.getElementById("notifCount");
+            let textElem = document.getElementById("notifText");
+            let notifList = document.getElementById("notifList");
+
+            notifList.innerHTML = ""; // Clear previous list
+            countElem.innerText = notifications.length;
+            countElem.style.display = notifications.length > 0 ? "inline" : "none";
+
+            if (notifications.length === 0) {
+                textElem.innerText = "No new notifications";
+            } else {
+                textElem.innerText = "You have new notifications";
+                notifications.forEach(notif => {
+                    let notifItem = document.createElement("a");
+                    notifItem.href = "#";
+                    notifItem.className = "dropdown-item";
+                    notifItem.innerHTML = `
+                        <i class="fas fa-envelope mr-2"></i> ${notif.message}
+                        <span class="float-right text-muted text-sm">${new Date(notif.createdAt).toLocaleString()}</span>
+                    `;
+                    notifItem.onclick = () => markAsRead(notif.notification_id);
+                    notifList.appendChild(notifItem);
+                });
+            }
+
+            
+        } catch (err) {
+            console.error("Error loading notifications:", err);
+        }
+    }
+
+    async function markAsRead(notificationId) {
+        await fetch(`/api/notification/mark-as-read/${notificationId}`, { method: "POST" });
+        loadNotifications();
+    }
+
+    // Load notifications on page load
+    document.addEventListener("DOMContentLoaded", loadNotifications);
+</script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>

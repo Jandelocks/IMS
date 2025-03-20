@@ -23,7 +23,7 @@ namespace IMS.Models
         public string role { get; set; }
 
         [Required]
-        public string department { get; set; } // Acts as a foreign key reference
+        public string department { get; set; }
 
         public string? profile { get; set; }
 
@@ -40,5 +40,6 @@ namespace IMS.Models
         public virtual ICollection<UpdatesModel> Updates { get; set; }
         public virtual ICollection<CommentsModel> Comments { get; set; }
         public virtual ICollection<AttachmentsModel> Attachments { get; set; }
+        public virtual ICollection<NotificationsModel> Notifications { get; set; }
     }
 }

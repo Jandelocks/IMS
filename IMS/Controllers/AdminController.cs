@@ -15,11 +15,13 @@ namespace IMS.Controllers
         private readonly ApplicationDbContext _context;
         private readonly LogService _logService;
         private readonly SessionService _sessionService;
-        public AdminController(ApplicationDbContext context, LogService logService, SessionService sessionService)
+        private readonly NotificationService _notificationService;
+        public AdminController(ApplicationDbContext context, LogService logService, SessionService sessionService, NotificationService notificationService)
         {
             _context = context;
             _logService = logService;
             _sessionService = sessionService;
+            _notificationService = notificationService;
         }
 
         public async Task<IActionResult> Index()
@@ -131,7 +133,14 @@ namespace IMS.Controllers
         {
             int userId = _sessionService.GetUserId();
             var incident = await _context.incidents.FindAsync(Id);
+
             if (incident == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _context.users.FindAsync(incident.user_id);
+            if (user == null)
             {
                 return NotFound();
             }
@@ -146,8 +155,8 @@ namespace IMS.Controllers
             _context.incidents.Remove(incident);
             _logService.AddLog(userId, $"Remove Incident: {incident.tittle}");
             await _context.SaveChangesAsync();
-
-            return RedirectToAction("Incidents"); // Redirect back to list
+            await _notificationService.SendNotification(user.user_id, "Your Report was Deleted");
+            return RedirectToAction("Incidents");
         }
 
         [HttpPost]
@@ -165,12 +174,13 @@ namespace IMS.Controllers
             _context.Update(incident);
             await _context.SaveChangesAsync();
             _logService.AddLog((int)userId, $"Assign Incidents to : {assignedUserId}");
+            await _notificationService.SendNotification(assignedUserId, "You have been assigned a new incident");
             return RedirectToAction("Incidents");
         }
         public async Task<IActionResult> Categories()
         {
             var categories = await _context.categories.ToListAsync();
-            var departments =await  _context.departments.ToListAsync();
+            var departments = await _context.departments.ToListAsync();
 
             var viewModel = new CategoriesDepartmentsViewModel
             {
@@ -186,10 +196,10 @@ namespace IMS.Controllers
             int userId = _sessionService.GetUserId();
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
-            var newcategory = new CategoriesModel 
-            { 
-                category_name = category_name, 
-                description = category_desc ,
+            var newcategory = new CategoriesModel
+            {
+                category_name = category_name,
+                description = category_desc,
                 department_id = department,
                 token = token
             };
@@ -205,16 +215,16 @@ namespace IMS.Controllers
         public IActionResult DeleteCategory(int Id)
         {
             int userId = _sessionService.GetUserId();
-            var cat = _context.categories.Find(Id); 
+            var cat = _context.categories.Find(Id);
             if (cat == null)
             {
-                return NotFound(); 
+                return NotFound();
             }
-            _context.categories.Remove(cat); 
+            _context.categories.Remove(cat);
             _context.SaveChanges();
 
             _logService.AddLog(userId, $"Deleted category: {cat.category_name}");
-            return RedirectToAction("Categories"); 
+            return RedirectToAction("Categories");
         }
 
         [HttpPost]
@@ -227,7 +237,7 @@ namespace IMS.Controllers
                 return Content("Invalid Action");
             }
 
-            cat.category_name = category_name; 
+            cat.category_name = category_name;
             cat.description = category_desc;
             await _context.SaveChangesAsync();
 
@@ -244,7 +254,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> Department()
         {
             var departments = await _context.departments.ToListAsync();
-            
+
             return View("Department", departments);
         }
         public async Task<IActionResult> DepartmentDetails(string token)
@@ -408,7 +418,7 @@ namespace IMS.Controllers
             int userId = _sessionService.GetUserId();
 
             // Fetch incidents for the logged-in user
-            var incidents = await _context.incidents.Where(i =>i.status == "Closed").ToListAsync();
+            var incidents = await _context.incidents.Where(i => i.status == "Closed").ToListAsync();
 
             var updates = await _context.updates.ToListAsync();
 

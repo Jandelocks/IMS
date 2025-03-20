@@ -42,6 +42,7 @@
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto">
+                @await Html.PartialAsync("_Notification")
                 <li class="nav-item">
                     <a asp-controller="profile" asp-action="" class="nav-link"><i class="fas fa-user"></i> Profile</a>
                 </li>
@@ -91,6 +92,12 @@
                                 <p>Review Reports</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a asp-action="Department" asp-route-department="@ViewBag.UserDepartment" class="nav-link">
+                                <i class="nav-icon fa-solid fa-building-user"></i>
+                                <p>Department</p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -98,6 +105,15 @@
 
         <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0 fw-bold">Reports</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="content">
                 <div class="container-fluid">
                     <div class="card">
