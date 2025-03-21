@@ -169,42 +169,23 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-6">
-                            <div class="card">
-                                <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
-                                    <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Recent Incidents</h3>
-                                    <a asp-action="manageIncidents" class="btn btn-success ms-auto"><i class="fas fa-eye"></i> View all Incidents</a>
+                        <div class="col-md-6">
+                            <div class="card shadow-sm">
+                                <!-- Chart Card -->
+                                <div class="card-header">
+                                    <h3 class="card-title">Category</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-primary btn-sm incident-filter" data-filter="daily">Daily</button>
+                                        <button class="btn btn-info btn-sm incident-filter" data-filter="monthly">Monthly</button>
+                                        <button class="btn btn-warning btn-sm incident-filter" data-filter="yearly">Yearly</button>
+                                    </div>
                                 </div>
                                 <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table id="tbl" class="table table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th>Title</th>
-                                                    <th>Category</th>
-                                                    <th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @if (Model != null && Model.Any())
-                                                {
-                                                    @foreach (var incident in Model)
-                                                    {
-                                                        <tr>
-                                                            <td>@incident.tittle</td>
-                                                            <td>@incident.category</td>
-                                                            <td>@incident.status</td>
-
-                                                        </tr>
-
-                                                    }
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                    <canvas id="departmentIncidentChart"></canvas>
                                 </div>
                             </div>
                         </div>
+
                         <div class="col-md-6">
                             <div class="card shadow-sm">
                                 <div class="card-header bg-dark text-white">
@@ -215,38 +196,76 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+                                        <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Recent Incidents</h3>
+                                        <a asp-action="manageIncidents" class="btn btn-success ms-auto"><i class="fas fa-eye"></i> View all Incidents</a>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table id="tbl" class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Title</th>
+                                                        <th>Category</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if (Model != null && Model.Any())
+                                                    {
+                                                        @foreach (var incident in Model)
+                                                        {
+                                                            <tr>
+                                                                <td>@incident.tittle</td>
+                                                                <td>@incident.category</td>
+                                                                <td>@incident.status</td>
+
+                                                            </tr>
+
+                                                        }
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <script>
-        jQuery.noConflict();
-        jQuery(document).ready(function ($) {
-            console.log("Document is ready. Initializing DataTable...");
+        <script>
+            jQuery.noConflict();
+            jQuery(document).ready(function ($) {
+                console.log("Document is ready. Initializing DataTable...");
 
-            if ($.fn.DataTable) {
-                $('#tbl').DataTable({
-                    "paging": true,  // Enable pagination
-                    "lengthMenu": [5, 10, 15, 20], // Page length options
-                    "ordering": true, // Enable sorting
-                    "info": true, // Show table info
-                    "searching": true, // Enable search bar
-                    "language": {
-                        "paginate": {
-                            "previous": "<i class='fas fa-chevron-left'></i>",
-                            "next": "<i class='fas fa-chevron-right'></i>"
+                if ($.fn.DataTable) {
+                    $('#tbl').DataTable({
+                        "paging": true,  // Enable pagination
+                        "lengthMenu": [5, 10, 15, 20], // Page length options
+                        "ordering": true, // Enable sorting
+                        "info": true, // Show table info
+                        "searching": false, // Enable search bar
+                        "language": {
+                            "paginate": {
+                                "previous": "<i class='fas fa-chevron-left'></i>",
+                                "next": "<i class='fas fa-chevron-right'></i>"
+                            }
                         }
-                    }
-                });
-            } else {
-                console.error("DataTable is not defined. Check if DataTables JS is loaded properly.");
-            }
-        });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                    });
+                } else {
+                    console.error("DataTable is not defined. Check if DataTables JS is loaded properly.");
+                }
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
+        <script>
         $(document).ready(function () {
             var message = "@TempData["Greeting"]";
             if (message) {
@@ -261,8 +280,8 @@
                 });
             }
         });
-    </script>
-
+        </script>
+    </div>
 </body>
 
 </html>

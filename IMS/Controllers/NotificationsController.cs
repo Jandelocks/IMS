@@ -49,4 +49,21 @@ public class NotificationController : ControllerBase
 
         return Ok(new { message = "Notification marked as read" });
     }
+
+    [HttpPost("mark-all-as-read")]
+    public async Task<IActionResult> MarkAllAsRead()
+    {
+        int userId = _sessionService.GetUserId();
+        var notifications = await _context.Notifications
+            .Where(n => n.user_id == userId && !n.IsRead)
+            .ToListAsync();
+
+        foreach (var notification in notifications)
+        {
+            notification.IsRead = true;
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { message = "All notifications marked as read" });
+    }
 }

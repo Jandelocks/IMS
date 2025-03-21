@@ -56,8 +56,8 @@
     @*         </div> *@
     @*     </nav> *@
     @* </header> *@
-    <button id="toggleDarkMode" class="btn btn-warning floating-btn">
-        <i class="fas fa-cloud-sun"></i>
+    <button id="toggleDarkMode" class="btn btn-dark floating-btn">
+        <i class="fas fa-moon"></i>
     </button>
 
 
@@ -87,9 +87,9 @@
             // Load saved mode from localStorage
             if (localStorage.getItem("dark-mode") === "enabled") {
                 body.classList.add("dark-mode");
-                toggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
-                toggleBtn.classList.remove("btn-warning");
-                toggleBtn.classList.add("btn-dark");
+                toggleBtn.innerHTML = '<i class="fas fa-cloud-sun"></i>';
+                toggleBtn.classList.remove("btn-dark");
+                toggleBtn.classList.add("btn-warning");
             }
 
             toggleBtn.addEventListener("click", function () {
@@ -97,14 +97,15 @@
 
                 if (body.classList.contains("dark-mode")) {
                     localStorage.setItem("dark-mode", "enabled");
-                    toggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
-                    toggleBtn.classList.remove("btn-warning");
-                    toggleBtn.classList.add("btn-dark");
-                } else {
-                    localStorage.setItem("dark-mode", "disabled");
                     toggleBtn.innerHTML = '<i class="fas fa-cloud-sun"></i>';
                     toggleBtn.classList.remove("btn-dark");
                     toggleBtn.classList.add("btn-warning");
+                    
+                } else {
+                    localStorage.setItem("dark-mode", "disabled");
+                    toggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+                    toggleBtn.classList.remove("btn-warning");
+                    toggleBtn.classList.add("btn-dark");
                 }
             });
         });

@@ -110,7 +110,7 @@
                             <h4 class="mb-0"><i class="fas fa-exclamation-circle"></i> Report an Incident To : @ViewBag.DepartmentName Department</h4>
                         </div>
                         <div class="card-body">
-                            <form method="post" asp-action="submitreports" enctype="multipart/form-data" class="needs-validation" novalidate>
+                            <form method="post" asp-action="submitreports" enctype="multipart/form-data" class="needs-validation">
                                 <!-- Incident Title -->
 
                                 <input type="hidden" name="departmentId" value="@ViewBag.DepartmentId">
@@ -156,7 +156,7 @@
                                 <div class="mb-3">
                                     <label class="form-label"><i class="fas fa-upload"></i> Attach Evidence</label>
                                     <div class="input-group">
-                                        <input type="file" class="form-control" id="imageInput" name="images" accept="image/*" multiple required>
+                                        <input type="file" class="form-control" id="imageInput" name="images" accept="image/*" multiple>
                                         <label class="input-group-text btn btn-outline-secondary" for="imageInput">
                                             <i class="fas fa-paperclip"></i>
                                         </label>

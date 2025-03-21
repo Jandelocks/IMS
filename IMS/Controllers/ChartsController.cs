@@ -1,5 +1,6 @@
 ﻿using IMS.Data;
 using IMS.Models;
+using IMS.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -11,10 +12,12 @@ namespace IMS.Controllers
     public class ChartsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly SessionService _sessionService;
 
-        public ChartsController(ApplicationDbContext context)
+        public ChartsController(ApplicationDbContext context, SessionService sessionService)
         {
             _context = context;
+            _sessionService = sessionService;
         }
 
         public async Task<IActionResult> GetIncidentCounts()
@@ -116,6 +119,39 @@ namespace IMS.Controllers
                 monthly = monthlyCount,
                 yearly = yearlyCount
             });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetModeratorDepartmentIncidents()
+        {
+            int userId = _sessionService.GetUserId(); // Get logged-in user ID
+            var today = DateTime.Today;
+            var startOfMonth = new DateTime(today.Year, today.Month, 1);
+            var startOfYear = new DateTime(today.Year, 1, 1);
+
+            // Get department of the logged-in moderator
+            var moderator = await _context.users.FindAsync(userId);
+            if (moderator == null || string.IsNullOrEmpty(moderator.department))
+                return Json(new { error = "User not found or has no department assigned." });
+
+            string department = moderator.department;
+
+            var departmentIncidents = await _context.incidents
+                .Where(i => i.Department.department == department && i.assigned_too == userId)
+                .GroupBy(i => i.Department)
+                .Select(g => new
+                {
+                    Department = g.Key,
+                    Daily = g.Count(i => i.reported_at.Date == today),
+                    Monthly = g.Count(i => i.reported_at >= startOfMonth),
+                    Yearly = g.Count(i => i.reported_at >= startOfYear),
+                    Categories = g.GroupBy(i => i.category)
+                        .Select(c => new { Category = c.Key, Count = c.Count() })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return Json(departmentIncidents);
         }
     }
 }

@@ -157,18 +157,32 @@ namespace IMS.Controllers
 
 
         [HttpGet]
-        public IActionResult delete(int Id)
+        public async Task<IActionResult> delete(int Id)
         {
             int userId = _sessionService.GetUserId();
-            var person = _context.incidents.Find(Id); // Find the person by ID
-            
-            if (person == null)
+            var IncidentId = await _context.incidents.FindAsync(Id); // Find the IncidentId by ID
+
+            if (IncidentId == null)
             {
-                return NotFound(); // Prevents error if person does not exist
+                return NotFound(); // Prevents error if IncidentId does not exist
             }
 
-            _context.incidents.Remove(person); // Remove the person
-            _context.SaveChanges(); // Save changes
+            // Find attachments related to the incident
+            var attachments = await _context.attachments.Where(a => a.incident_id == Id).ToListAsync();
+
+            // Remove attachments from directory and database
+            foreach (var attachment in attachments)
+            {
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", attachment.file_path.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+                _context.attachments.Remove(attachment);
+            }
+
+            _context.incidents.Remove(IncidentId); // Remove the Incident
+            await _context.SaveChangesAsync(); // Save changes
             _logService.AddLog(userId, "Delete Report");
             return RedirectToAction("Reports"); // Redirect back to list
         }

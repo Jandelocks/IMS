@@ -108,74 +108,80 @@
             </div>
         </aside>
 
-        <div class="content-wrapper p-4">
-            <div class="container-fluid">
-                <div class="container mt-4">
-                    <h2 class="mb-4 text-dark"><i class="fas fa-building"></i> Department Details</h2>
-
-                    @foreach (var department in Model.Department)
-                    {
-                        <div class="card shadow-lg border-0">
-                            <div class="card-header bg-dark text-white">
-                                <h3 class="m-0">@department.department</h3>
-                            </div>
-                            <div class="card-body d-flex align-items-center">
-                                <div class="flex-grow-1">
-                                    <p class="text-muted"><strong>Description:</strong> @department.description</p>
-                                </div>
-                                @if (!string.IsNullOrEmpty(department.ImagePath))
-                                {
-                                    <img src="@department.ImagePath" alt="Department Image" class="img-fluid rounded shadow-sm ms-3" style="max-width: 200px;">
-                                }
-                            </div>
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0 fw-bold"> Department Details</h1>
                         </div>
-
-                        <h4 class="mt-4 text-secondary"><i class="fas fa-users"></i> Users in this Department</h4>
-
-                        @if (Model.Users.Any())
+                    </div>
+                </div>
+                <div class="container-fluid">
+                    <div class="container">
+                        @foreach (var department in Model.Department)
                         {
-                            <div class="row mt-3">
-                                @foreach (var user in Model.Users)
-                                {
-                                    <div class="col-md-4">
-                                        <div class="card border-light shadow-sm mb-3">
-                                            <div class="card-body d-flex align-items-center">
-                                                <i class="fas fa-user-circle fa-2x text-dark me-3"></i>
-                                                <div>
-                                                    <h6 class="mb-0">@user.full_name</h6>
-                                                    <p class="text-muted mb-0"><i class="fas fa-envelope"></i> @user.email</p>
+                            <div class="card shadow-lg border-0">
+                                <div class="card-header bg-dark text-white">
+                                    <h3 class="m-0">@department.department</h3>
+                                </div>
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <p class="text-muted"><strong>Description:</strong> @department.description</p>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(department.ImagePath))
+                                    {
+                                        <img src="@department.ImagePath" alt="Department Image" class="img-fluid rounded shadow-sm ms-3" style="max-width: 200px;">
+                                    }
+                                </div>
+                            </div>
+
+                            <h4 class="mt-4 text-secondary"><i class="fas fa-users"></i> Users in this Department</h4>
+
+                            @if (Model.Users.Any())
+                            {
+                                <div class="row mt-3">
+                                    @foreach (var user in Model.Users)
+                                    {
+                                        <div class="col-md-4">
+                                            <div class="card border-light shadow-sm mb-3">
+                                                <div class="card-body d-flex align-items-center">
+                                                    <i class="fas fa-user-circle fa-2x text-dark me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">@user.full_name</h6>
+                                                        <p class="text-muted mb-0"><i class="fas fa-envelope"></i> @user.email</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                }
-                            </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No users found in this department.</p>
+                            }
                         }
-                        else
-                        {
-                            <p class="text-muted">No users found in this department.</p>
-                        }
-                    }
 
-                    <!-- Categories Section -->
-                    <h4 class="mt-4 text-secondary"><i class="fas fa-list"></i> Categories</h4>
-                    <div class="row">
-                        @foreach (var category in Model.Categories)
-                        {
-                            <div class="col-md-3 col-sm-6">
-                                <div class="card border-light shadow-sm mb-3">
-                                    <div class="card-body text-center">
-                                        <i class="fas fa-tag text-dark fa-2x mb-2"></i>
-                                        <h6 class="mb-0">@category.category_name</h6>
+                        <!-- Categories Section -->
+                        <h4 class="mt-4 text-secondary"><i class="fas fa-list"></i> Categories</h4>
+                        <div class="row">
+                            @foreach (var category in Model.Categories)
+                            {
+                                <div class="col-md-3 col-sm-6">
+                                    <div class="card border-light shadow-sm mb-3">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-tag text-dark fa-2x mb-2"></i>
+                                            <h6 class="mb-0">@category.category_name</h6>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        }
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 </body>
 
 </html>
