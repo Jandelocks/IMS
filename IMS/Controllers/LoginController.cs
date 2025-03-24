@@ -34,6 +34,10 @@ namespace IMS.Controllers
 
         public IActionResult Index()
         {
+            if (HttpContext.Items.ContainsKey("TempDataMessage"))
+            {
+                TempData["ErrorMessage"] = HttpContext.Items["TempDataMessage"];
+            }
             return View("login");
         }
         public IActionResult Register()

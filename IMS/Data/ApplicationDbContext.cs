@@ -21,6 +21,12 @@ namespace IMS.Data
         public DbSet<NotificationsModel> Notifications { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Users -> Notifications (One-to-Many)
+            modelBuilder.Entity<NotificationsModel>()
+                .HasOne(n => n.User)
+                .WithMany(u => u.Notifications)
+                .HasForeignKey(n => n.user_id)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Department -> Categories (One-to-Many)
             modelBuilder.Entity<CategoriesModel>()

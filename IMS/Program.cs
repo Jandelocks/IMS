@@ -89,7 +89,9 @@ app.UseStaticFiles();  // Serve static files (CSS, JS, etc.)
 app.UseRouting();
 app.UseSession(); // Ensure session is enabled before authentication
 app.UseAuthentication();
+app.UseMiddleware<UserValidationMiddleware>();
 app.UseAuthorization();
+
 
 // Map static assets and routes
 app.MapStaticAssets();
