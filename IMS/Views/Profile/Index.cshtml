@@ -52,6 +52,7 @@
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto">
+                @await Html.PartialAsync("_Notification")
                 <li class="nav-item">
                     <a asp-controller="profile" asp-action="" class="nav-link"><i class="fas fa-user"></i> Profile</a>
                 </li>

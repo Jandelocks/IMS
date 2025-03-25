@@ -313,11 +313,12 @@
                     icon: "success",
                     title: message,
                     showConfirmButton: false,
-                    timer: 5000,  // Auto-close in 3 seconds
+                    timer: 3000,  // Auto-close in 3 seconds
                     timerProgressBar: true
                 });
             }
         });
     </script>
+    @await Html.PartialAsync("_SignalR")
 </body>
 </html>

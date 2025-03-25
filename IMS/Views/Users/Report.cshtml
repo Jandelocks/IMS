@@ -340,14 +340,8 @@
                                                 </div>
                                             }
                                         }
-                                        @* else *@
-                                        @* { *@
-                                        @*     <tr><td colspan="7" class="text-center">No records found</td></tr> *@
-                                        @* } *@
                                     </tbody>
-
                                 </table>
-
                             </div>
                         </div>
                     </div>
@@ -380,5 +374,6 @@
             }
         });
     </script>
+    @await Html.PartialAsync("_SignalR")
 </body>
 </html>

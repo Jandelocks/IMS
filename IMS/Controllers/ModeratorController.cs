@@ -17,11 +17,13 @@ namespace IMS.Controllers
         private readonly ApplicationDbContext _context;
         private readonly LogService _logService;
         private readonly SessionService _sessionService;
-        public ModeratorController(ApplicationDbContext context, LogService logService, SessionService sessionService)
+        private readonly NotificationService _notificationService;
+        public ModeratorController(ApplicationDbContext context, LogService logService, SessionService sessionService, NotificationService notificationService)
         {
             _context = context;
             _logService = logService;
             _sessionService = sessionService;
+            _notificationService = notificationService;
         }
         public async Task<IActionResult> Index()
         {
@@ -70,6 +72,7 @@ namespace IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> Resolve(int incidentId, int userid, string comments, IFormFile attach)
         {
+            int UserId = _sessionService.GetUserId();
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)); // Secure token
             string filePath = null;
             if (attach != null && attach.Length > 0)
@@ -113,6 +116,14 @@ namespace IMS.Controllers
             // Update status
             incident.status = "Resolved";
             _context.incidents.Update(incident);
+
+            var user = await _context.users.FindAsync(UserId);
+            if (user != null)
+            {
+                await _notificationService.SendNotification(1, $"{user.full_name} has resolved an incident.");
+                await _notificationService.SendNotification(UserId, "You have successfully resolved an incident.");
+                await _notificationService.SendNotification(userid, "Your reported incident has been resolved.");
+            }
 
             _logService.AddLog(userid, $"Rosolved an incident: {incident.tittle}");
             await _context.SaveChangesAsync();

@@ -1,0 +1,16 @@
+﻿<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+       $(document).ready(function () {
+           var connection = new signalR.HubConnectionBuilder().withUrl("/incidentHub").build();
+
+           connection.start().then(function () {
+               console.log("Connected to SignalR Hub");
+           }).catch(function (err) {
+               console.error("Error connecting to SignalR Hub:", err.toString());
+           });
+
+           connection.on("ReceiveIncidentUpdate", function () {
+               location.reload(); // Reload page when update occurs
+           });
+       });
+</script>

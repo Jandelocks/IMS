@@ -255,7 +255,7 @@ namespace IMS.Controllers
             }
 
             _logService.AddLog(user.user_id, "User logged in");
-            await _notificationService.SendNotification(user.user_id, "You have logged in");
+            //await _notificationService.SendNotification(user.user_id, "You have logged in");
             TempData["Greeting"] = $"Welcome back, {user.full_name}!";
             return user.role switch
             {

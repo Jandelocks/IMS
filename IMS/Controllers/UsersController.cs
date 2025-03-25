@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using IMS.Models;
 using IMS.Services;
+using Microsoft.AspNetCore.SignalR;
 namespace IMS.Controllers
 
 {
@@ -16,12 +17,14 @@ namespace IMS.Controllers
         private readonly LogService _logService;
         private readonly SessionService _sessionService;
         private readonly NotificationService _notificationService;
-        public UsersController(ApplicationDbContext context, LogService logService, SessionService sessionService, NotificationService notificationService)
+        private readonly IHubContext<IncidentHub> _hubContext;
+        public UsersController(ApplicationDbContext context, LogService logService, SessionService sessionService, NotificationService notificationService, IHubContext<IncidentHub> hubContext)
         {
             _context = context;
             _logService = logService;
             _sessionService = sessionService;
             _notificationService = notificationService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -109,6 +112,7 @@ namespace IMS.Controllers
                         _context.attachments.Add(attach);
                     }
                 }
+
                 await _context.SaveChangesAsync(); // Save all attachments in the database
             }
 
@@ -117,8 +121,8 @@ namespace IMS.Controllers
             {
                 await _notificationService.SendNotification(1, $"New incident \"{tittle}\" ");
                 await _notificationService.SendNotification(userId, $"Thank You, Your report is received.");
+                await _hubContext.Clients.All.SendAsync("ReceiveIncidentUpdate");
             }
-
             _logService.AddLog(userId, $"Created an incident: {tittle}");
             return RedirectToAction("dashboard"); // Redirect to Dashboard
         }
@@ -183,6 +187,7 @@ namespace IMS.Controllers
 
             _context.incidents.Remove(IncidentId); // Remove the Incident
             await _context.SaveChangesAsync(); // Save changes
+            await _hubContext.Clients.All.SendAsync("ReceiveIncidentUpdate");
             _logService.AddLog(userId, "Delete Report");
             return RedirectToAction("Reports"); // Redirect back to list
         }
@@ -302,7 +307,7 @@ namespace IMS.Controllers
 
                 await _context.SaveChangesAsync();
             }
-
+            await _hubContext.Clients.All.SendAsync("ReceiveIncidentUpdate");
             return RedirectToAction("Reports");
         }
 

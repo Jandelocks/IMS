@@ -95,12 +95,14 @@ app.UseAuthorization();
 
 // Map static assets and routes
 app.MapStaticAssets();
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Homepage}/{action=Index}/{id?}"
 ).WithStaticAssets();
 
 // SignalR Hub Mapping
+app.MapHub<IncidentHub>("/incidentHub");
 app.MapHub<NotificationHub>("/notificationHub");
 
 // Run the application
