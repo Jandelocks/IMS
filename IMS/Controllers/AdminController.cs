@@ -426,13 +426,16 @@ namespace IMS.Controllers
 
             var users = await _context.users.ToListAsync();
 
+            var attachments = await _context.attachments.ToListAsync();
+
             // Combine incidents, attachments, and updates using ViewModel
             var resolvedlist = incidents.Select(i => new IncidentViewModel
             {
                 Incident = i,
                 Updates = updates.Where(u => u.incident_id == i.incident_id).ToList(),
                 Comments = Comments.Where(c => c.incident_id == i.incident_id).ToList(),
-                User = users.FirstOrDefault(u => u.user_id == i.user_id)
+                User = users.FirstOrDefault(u => u.user_id == i.user_id),
+                Attachments = attachments.Where(a => a.incident_id == i.incident_id).ToList()
             }).ToList();
 
             return View("Closed", resolvedlist);

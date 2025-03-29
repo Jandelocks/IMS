@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using IMS.Models;
 using IMS.Services;
 using Microsoft.AspNetCore.SignalR;
+using System.Net.Mail;
 namespace IMS.Controllers
 
 {
@@ -355,7 +356,9 @@ namespace IMS.Controllers
                                           .Where(i => i.user_id == userId)
                                           .Where(u => u.status == "Closed")
                                           .ToListAsync();
-
+             var attachments = await _context.attachments
+                                 .Where(a => a.user_id == userId)
+                                 .ToListAsync();
             var updates = await _context.updates
                                        .Where(u => incidents.Select(i => i.incident_id).Contains(u.incident_id))
                                        .ToListAsync();
@@ -368,7 +371,8 @@ namespace IMS.Controllers
             {
                 Incident = i,
                 Comments = comments.Where(c => c.incident_id == i.incident_id).ToList(),
-                Updates = updates.Where(u => u.incident_id == i.incident_id).ToList()
+                Updates = updates.Where(u => u.incident_id == i.incident_id).ToList(),
+                Attachments = attachments.Where(a => a.incident_id == i.incident_id).ToList(),
             }).ToList();
 
             return View("Resolved", resolvedlist);
