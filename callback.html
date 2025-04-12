@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Redirecting...</title>
+    <script>
+      const params = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = params.get('access_token');
+      
+      if (accessToken) {
+        // Redirect to your app with token
+        window.location.href = `snapalarm://auth#access_token=${accessToken}`;
+      } else {
+        document.body.innerText = "No access token found.";
+      }
+    </script>
+  </head>
+  <body>
+    Redirecting to app...
+  </body>
+</html>
