@@ -1,4 +1,5 @@
 using IMS.Data;
+using IMS.Repositories;
 using IMS.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -65,6 +66,18 @@ builder.Services.AddScoped<SessionService>();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<NotificationService>();
 
+
+builder.Services.AddScoped<ILoginRepository, LoginRepository>();
+builder.Services.AddScoped<ILoginService, LoginService>();
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+
+builder.Services.AddScoped<IModeratorRepository, ModeratorRepository>();
+builder.Services.AddScoped<IModeratorService, ModeratorService>();
 // Add Distributed Cache (Required for Session)
 builder.Services.AddDistributedMemoryCache();
 

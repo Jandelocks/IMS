@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250324043113_notifcascade")]
-    partial class notifcascade
+    [Migration("20251028065137_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
