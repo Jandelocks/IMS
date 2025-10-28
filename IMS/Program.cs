@@ -86,6 +86,15 @@ builder.Services.AddDistributedMemoryCache();
 // ==============================
 var app = builder.Build();
 
+// run seeder on startup (only if tables are empty)
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<ApplicationDbContext>();
+
+    // Will apply migrations and seed only when table(s) are empty
+    Seeders.RunSeeders(db);
+}
 // ==============================
 // 3. Configure the HTTP Request Pipeline
 // ==============================
