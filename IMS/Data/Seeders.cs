@@ -268,99 +268,151 @@ namespace IMS.Data
         {
             if (context.Set<IncidentsModel>().Any()) return;
 
-            context.Set<IncidentsModel>().AddRange(
-                new IncidentsModel
-                {
-                    incident_id = 12,
-                    user_id = 3,
-                    tittle = "Network Outage in Main Office",
-                    description = "The entire office lost internet connectivity around 10:30 AM. All employees are unable to access internal systems, emails, and cloud-based services. Restarting the router did not resolve the issue.",
-                    status = "Pending",
-                    priority = "High",
-                    category = "Network Issues",
-                    reported_at = DateTime.Parse("2025-03-14 06:02:22"),
-                    assigned_too = null,
-                    token = "Qd/aT69LhRylvJFVd+GsPfEcSNgmKR1z+xX+0Z4zB/Y=",
-                    updated_at = null,
-                    department_id = 12
-                },
-                new IncidentsModel
-                {
-                    incident_id = 13,
-                    user_id = 6,
-                    tittle = "Payroll System Login Failure",
-                    description = "HR employees are unable to log in to the payroll system. Error message: 'Invalid Credentials' even though the credentials are correct.",
-                    status = "Pending",
-                    priority = "High",
-                    category = "Payroll Issues",
-                    reported_at = DateTime.Parse("2025-03-14 06:04:55"),
-                    assigned_too = null,
-                    token = "UptZquhuvLGhM01qb1cmd9V9oPQKl0cuAx6GXsYH9RE=",
-                    updated_at = null,
-                    department_id = 13
-                },
-                new IncidentsModel
-                {
-                    incident_id = 14,
-                    user_id = 7,
-                    tittle = "Elevator Malfunction in Building B",
-                    description = "Elevator in Building B is stuck on the 3rd floor. Employees are unable to use it, and the control panel is unresponsive.",
-                    status = "Pending",
-                    priority = "High",
-                    category = "Building Maintenance",
-                    reported_at = DateTime.Parse("2025-03-14 06:06:41"),
-                    assigned_too = null,
-                    token = "Q/8L3vjijELj2ApZvZ/RtlpzPNIsD/86Hq8D0vc7bHs=",
-                    updated_at = null,
-                    department_id = 14
-                },
-                new IncidentsModel
-                {
-                    incident_id = 15,
-                    user_id = 8,
-                    tittle = "Customer Complaint System Not Responding",
-                    description = "The customer complaint tracking system crashes after submitting a complaint. This is affecting response times.",
-                    status = "Pending",
-                    priority = "High",
-                    category = "Account Issues",
-                    reported_at = DateTime.Parse("2025-03-14 06:08:45"),
-                    assigned_too = null,
-                    token = "5Zb+X3izbPijUY8celgVJ40PefnDxz75PSUdh6AcVbU=",
-                    updated_at = null,
-                    department_id = 15
-                },
-                new IncidentsModel
-                {
-                    incident_id = 16,
-                    user_id = 9,
-                    tittle = "Missing Financial Reports in System",
-                    description = "Some financial records for February 2025 are missing in the accounting system. The reports do not load correctly.",
-                    status = "Pending",
-                    priority = "High",
-                    category = "Ergonomic Concerns",
-                    reported_at = DateTime.Parse("2025-03-14 06:09:58"),
-                    assigned_too = null,
-                    token = "kHmRUB+JBdxmh0JVdEdynvQs7Sl/SupcCYCE/PYC+Tw=",
-                    updated_at = null,
-                    department_id = 16
-                },
-                new IncidentsModel
-                {
-                    incident_id = 17,
-                    user_id = 3,
-                    tittle = "System Downtime",
-                    description = "The server suddenly shutdown and can't be opened.",
-                    status = "In Progress",
-                    priority = "High",
-                    category = "Hardware Failures",
-                    reported_at = DateTime.Parse("2025-03-15 10:27:52"),
-                    assigned_too = 4,
-                    token = "d5nLpbAe8s6k5RZY/UxjrdMHyYDbQp2eaq7zgQsl6ck=",
-                    updated_at = null,
-                    department_id = 12
-                }
-            );
+            var incidents = new List<IncidentsModel>();
+            var random = new Random(12345); // Fixed seed for consistent data
 
+            // Define sample data pools
+            var statuses = new[] { "Pending", "In Progress", "Resolved" };
+            var priorities = new[] { "Low", "Medium", "High", "Critical" };
+
+            // Categories mapped to departments
+            var categoryDeptMap = new Dictionary<string, int>
+    {
+        { "Network Issues", 12 },
+        { "Software Bugs", 12 },
+        { "Hardware Failures", 12 },
+        { "Cybersecurity Threats", 12 },
+        { "Workplace Harassment", 13 },
+        { "Payroll Issues", 13 },
+        { "Attendance & Leave", 13 },
+        { "Employee Benefits", 13 },
+        { "Building Maintenance", 14 },
+        { "Safety Hazards", 14 },
+        { "Janitorial Services", 14 },
+        { "Security Concerns", 14 },
+        { "Product Defects", 15 },
+        { "Billing Disputes", 15 },
+        { "Service Complaints", 15 },
+        { "Account Issues", 15 },
+        { "Workplace Injuries", 16 },
+        { "Health Code Violations", 16 },
+        { "Fire Safety Issues", 16 },
+        { "Ergonomic Concerns", 16 }
+    };
+
+            var categories = categoryDeptMap.Keys.ToArray();
+            var userIds = new[] { 3, 6, 7, 8, 9 };
+
+            // Sample titles for variety
+            var titleTemplates = new[]
+            {
+        "Network connectivity issues in {0}",
+        "System malfunction reported for {0}",
+        "Equipment failure - {0}",
+        "Security concern regarding {0}",
+        "Service interruption in {0}",
+        "Maintenance required for {0}",
+        "Software error affecting {0}",
+        "Hardware problem with {0}",
+        "Safety issue detected in {0}",
+        "Policy violation concerning {0}",
+        "Performance degradation in {0}",
+        "Access denied error for {0}",
+        "Configuration problem with {0}",
+        "Unexpected behavior in {0}",
+        "Critical alert from {0}"
+    };
+
+            var locationTemplates = new[]
+            {
+        "Building A", "Building B", "Floor 2", "Floor 3", "Main Office",
+        "West Wing", "East Wing", "Server Room", "Conference Room", "Cafeteria",
+        "Parking Area", "Reception", "Storage Room", "IT Department", "HR Office"
+    };
+
+            // Lorem Ipsum variations for descriptions
+            var loremDescriptions = new[]
+            {
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. The issue was first noticed during normal operations and requires immediate attention to prevent further disruption.",
+        "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Multiple users have reported similar symptoms, indicating a systemic problem.",
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris. The problem appears to be intermittent but is affecting productivity significantly.",
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum. Emergency protocols have been initiated to minimize business impact.",
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa. This incident has been escalated due to its critical nature and widespread effect.",
+        "Consectetur adipiscing elit, sed do eiusmod tempor incididunt. Initial troubleshooting steps have been attempted without success.",
+        "Magna aliqua ut enim ad minim veniam quis nostrud. Users are experiencing delays and errors when attempting to complete their tasks.",
+        "Ullamco laboris nisi ut aliquip ex ea commodo consequat. The root cause is currently under investigation by the technical team.",
+        "Reprehenderit in voluptate velit esse cillum dolore eu fugiat. System logs indicate abnormal behavior starting from early morning hours.",
+        "Proident sunt in culpa qui officia deserunt mollit anim. Multiple departments have been affected by this ongoing situation.",
+        "Tempor incididunt ut labore et dolore magna aliqua enim. Service restoration is the top priority and resources have been allocated accordingly.",
+        "Quis nostrud exercitation ullamco laboris nisi aliquip. The incident appears to be related to recent system updates or configuration changes.",
+        "Cillum dolore eu fugiat nulla pariatur excepteur sint. Workaround solutions are being explored while permanent fix is being developed.",
+        "Officia deserunt mollit anim id est laborum sed ut. User impact assessment shows critical business functions are compromised.",
+        "Perspiciatis unde omnis iste natus error sit voluptatem. Immediate intervention is required to restore normal operations and prevent data loss."
+    };
+
+            int incidentId = 12;
+
+            // Generate incidents for the past 30 days
+            DateTime startDate = DateTime.Parse("2025-03-01 08:00:00");
+            DateTime endDate = DateTime.Parse("2025-03-30 18:00:00");
+
+            for (int i = 0; i < 100; i++)
+            {
+                var category = categories[random.Next(categories.Length)];
+                var departmentId = categoryDeptMap[category];
+                var status = statuses[random.Next(statuses.Length)];
+                var userId = userIds[random.Next(userIds.Length)];
+
+                // Random date within range
+                TimeSpan timeSpan = endDate - startDate;
+                TimeSpan randomSpan = new TimeSpan(0, random.Next(0, (int)timeSpan.TotalMinutes), 0);
+                DateTime reportedAt = startDate + randomSpan;
+
+                // Generate title
+                var titleTemplate = titleTemplates[random.Next(titleTemplates.Length)];
+                var location = locationTemplates[random.Next(locationTemplates.Length)];
+                var title = string.Format(titleTemplate, location);
+
+                // Generate description
+                var description = loremDescriptions[random.Next(loremDescriptions.Length)];
+
+                // Assign moderator for some incidents
+                int? assignedTo = null;
+                DateTime? updatedAt = null;
+
+                if (status == "In Progress" || status == "Resolved")
+                {
+                    assignedTo = 4; // Moderator
+                                    // Set updated_at to 1-3 days after reported_at
+                    updatedAt = reportedAt.AddDays(random.Next(1, 4)).AddHours(random.Next(1, 8));
+                }
+
+                // Generate token
+                var tokenBytes = new byte[32];
+                random.NextBytes(tokenBytes);
+                var token = Convert.ToBase64String(tokenBytes);
+
+                incidents.Add(new IncidentsModel
+                {
+                    incident_id = incidentId++,
+                    user_id = userId,
+                    tittle = title,
+                    description = description,
+                    status = status,
+                    priority = priorities[random.Next(priorities.Length)],
+                    category = category,
+                    reported_at = reportedAt,
+                    assigned_too = assignedTo,
+                    token = token,
+                    updated_at = updatedAt,
+                    department_id = departmentId
+                });
+            }
+
+            // Sort by reported_at date
+            incidents = incidents.OrderBy(x => x.reported_at).ToList();
+
+            context.Set<IncidentsModel>().AddRange(incidents);
             SaveWithIdentityInsertFor<IncidentsModel>(context);
         }
     }
