@@ -29,7 +29,7 @@ namespace IMS.Controllers
                 return RedirectToAction("Index", "login");
             }
 
-            var profile = await _context.users.FirstOrDefaultAsync(i => i.user_id == userId);
+            var profile = await _context.Users.FirstOrDefaultAsync(i => i.user_id == userId);
             return View("Index", profile);
         }
 
@@ -37,7 +37,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> Updateprofile(int Id, string name, string email, string password, string confirmpassword, IFormFile profilepic)
         {
             int userId = _sessionService.GetUserId();
-            var user = await _context.users.FindAsync(Id);
+            var user = await _context.Users.FindAsync(Id);
             if (user == null)
             {
                 return NotFound();
@@ -85,7 +85,7 @@ namespace IMS.Controllers
                 user.profile = "/uploads/" + fileName; // Save new path in DB
             }
 
-            _context.users.Update(user);
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Profile updated successfully!";

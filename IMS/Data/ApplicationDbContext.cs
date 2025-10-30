@@ -9,15 +9,15 @@ namespace IMS.Data
     public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-
-        public DbSet<UsersModel> users { get; set; }
-        public DbSet<LogsModel> logs { get; set; }
-        public DbSet<IncidentsModel> incidents { get; set; }
-        public DbSet<UpdatesModel> updates { get; set; }
-        public DbSet<CommentsModel> comments { get; set; }
-        public DbSet<CategoriesModel> categories { get; set; }
-        public DbSet<AttachmentsModel> attachments { get; set; }
-        public DbSet<DepartmentsModel> departments { get; set; }
+        public DbSet<SessionModel> Sessions { get; set; }
+        public DbSet<UsersModel> Users { get; set; }
+        public DbSet<LogsModel> Logs { get; set; }
+        public DbSet<IncidentsModel> Incidents { get; set; }
+        public DbSet<UpdatesModel> Updates { get; set; }
+        public DbSet<CommentsModel> Comments { get; set; }
+        public DbSet<CategoriesModel> Categories { get; set; }
+        public DbSet<AttachmentsModel> Attachments { get; set; }
+        public DbSet<DepartmentsModel> Departments { get; set; }
         public DbSet<NotificationsModel> Notifications { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -103,6 +103,13 @@ namespace IMS.Data
                 .HasOne(l => l.User)
                 .WithMany()
                 .HasForeignKey(l => l.user_id)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            //Sessions
+            modelBuilder.Entity<SessionModel>()
+                .HasOne(s => s.Users)
+                .WithMany()
+                .HasForeignKey(s => s.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

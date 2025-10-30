@@ -18,19 +18,22 @@ namespace IMS.Controllers
         private readonly IRecaptchaService _recaptchaService;
         private readonly SessionService _sessionService;
         private readonly LogService _logService;
+        private readonly ISingleSessionManagerService _sessionManager;
 
         public LoginController(
             ILoginService loginService,
             ILoginRepository repository,
             IRecaptchaService recaptchaService,
             SessionService sessionService,
-            LogService logService)
+            LogService logService,
+            ISingleSessionManagerService sessionManager)
         {
             _loginService = loginService;
             _repository = repository;
             _recaptchaService = recaptchaService;
             _sessionService = sessionService;
             _logService = logService;
+            _sessionManager = sessionManager;
         }
 
         public IActionResult Index() => View("login");
@@ -76,7 +79,7 @@ namespace IMS.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> signup(string email, string password, bool rememberMe = false)
+        public async Task<IActionResult> Signup(string email, string password, bool rememberMe = false)
         {
             var recaptchaResponse = Request.Form["g-recaptcha-response"];
             if (string.IsNullOrEmpty(recaptchaResponse))
@@ -105,6 +108,15 @@ namespace IMS.Controllers
                 return RedirectToAction("Index");
             }
 
+            // 🔒 Check if user already logged in somewhere else
+            var sessionId = HttpContext.Session.Id;
+            if (_sessionManager.IsUserAlreadyLoggedIn(user.user_id.ToString(), sessionId))
+            {
+                TempData["ErrorMessage"] = "You are already logged in from another device. Please log out there first.";
+                return RedirectToAction("Index");
+            }
+
+            // ✅ Create claims and sign-in
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
@@ -121,23 +133,24 @@ namespace IMS.Controllers
                 ExpiresUtc = rememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddHours(1)
             };
 
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
-            HttpContext.Session.SetInt32("UserId", user.user_id);
-            HttpContext.Session.SetString("Token", user.token);
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties
+            );
 
-            if (rememberMe)
-            {
-                Response.Cookies.Append("UserToken", user.token, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    Expires = DateTime.UtcNow.AddDays(30)
-                });
-            }
+            // 🧠 Capture session info
+            var device = Request.Headers["User-Agent"].ToString();
+            //var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
+            // ✅ Register this user’s session in DB
+            _sessionManager.RegisterUserSession(user.user_id.ToString(), sessionId, device, null);
+
+            // 🧾 Log
             _logService.AddLog(user.user_id, "User logged in");
             TempData["Greeting"] = $"Welcome back, {user.full_name}!";
 
+            // 🚀 Redirect based on role
             return user.role switch
             {
                 "admin" => Redirect("/Admin/"),
@@ -148,9 +161,13 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> Logout()
         {
-            var newToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
             int userId = _sessionService.GetUserId();
 
+            // 🧹 Remove session from DB
+            _sessionManager.RemoveUserSession(userId.ToString());
+
+            // 🔐 Rotate token to invalidate existing cookies elsewhere
+            var newToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
             var user = await _repository.GetUserByIdAsync(userId);
             if (user != null)
             {
@@ -158,12 +175,18 @@ namespace IMS.Controllers
                 await _repository.UpdateUserAsync(user);
             }
 
+            // 🚪 Sign out and clear session
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             Response.Cookies.Delete("UserToken");
             HttpContext.Session.Clear();
+
+            // 🧾 Log action
             _logService.AddLog(userId, "User logged out");
+            TempData["SuccessMessage"] = "You have been logged out successfully.";
+
             return Redirect("/login");
         }
+
 
         public async Task<IActionResult> adminnewuser(RegisterViewModel model)
         {
@@ -171,5 +194,6 @@ namespace IMS.Controllers
             TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
             return RedirectToAction("users", "Admin");
         }
+
     }
 }

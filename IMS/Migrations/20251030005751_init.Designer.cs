@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251028073952_init")]
+    [Migration("20251030005751_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace IMS.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -60,7 +60,7 @@ namespace IMS.Migrations
 
                     b.HasIndex("user_id");
 
-                    b.ToTable("attachments");
+                    b.ToTable("Attachments");
                 });
 
             modelBuilder.Entity("IMS.Models.CategoriesModel", b =>
@@ -90,7 +90,7 @@ namespace IMS.Migrations
 
                     b.HasIndex("department_id");
 
-                    b.ToTable("categories");
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("IMS.Models.CommentsModel", b =>
@@ -127,7 +127,7 @@ namespace IMS.Migrations
 
                     b.HasIndex("user_id");
 
-                    b.ToTable("comments");
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("IMS.Models.DepartmentsModel", b =>
@@ -154,7 +154,7 @@ namespace IMS.Migrations
 
                     b.HasKey("department_id");
 
-                    b.ToTable("departments");
+                    b.ToTable("Departments");
                 });
 
             modelBuilder.Entity("IMS.Models.IncidentsModel", b =>
@@ -210,7 +210,7 @@ namespace IMS.Migrations
 
                     b.HasIndex("user_id");
 
-                    b.ToTable("incidents");
+                    b.ToTable("Incidents");
                 });
 
             modelBuilder.Entity("IMS.Models.LogsModel", b =>
@@ -243,7 +243,7 @@ namespace IMS.Migrations
 
                     b.HasIndex("user_id");
 
-                    b.ToTable("logs");
+                    b.ToTable("Logs");
                 });
 
             modelBuilder.Entity("IMS.Models.NotificationsModel", b =>
@@ -272,6 +272,42 @@ namespace IMS.Migrations
                     b.HasIndex("user_id");
 
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("IMS.Models.SessionModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DeviceInfo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IP")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LoginTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SessionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Sessions");
                 });
 
             modelBuilder.Entity("IMS.Models.UpdatesModel", b =>
@@ -308,7 +344,7 @@ namespace IMS.Migrations
 
                     b.HasIndex("user_id");
 
-                    b.ToTable("updates");
+                    b.ToTable("Updates");
                 });
 
             modelBuilder.Entity("IMS.Models.UsersModel", b =>
@@ -357,7 +393,7 @@ namespace IMS.Migrations
 
                     b.HasKey("user_id");
 
-                    b.ToTable("users");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("IMS.Models.AttachmentsModel", b =>
@@ -447,6 +483,17 @@ namespace IMS.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("IMS.Models.SessionModel", b =>
+                {
+                    b.HasOne("IMS.Models.UsersModel", "Users")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("IMS.Models.UpdatesModel", b =>

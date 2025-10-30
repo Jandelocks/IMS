@@ -3,10 +3,10 @@ using IMS.Repositories;
 using IMS.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using reCAPTCHA.AspNetCore;
+using Hangfire;
+using Hangfire.SqlServer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +20,11 @@ builder.Services.AddControllersWithViews(options =>
     var policy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
-    //options.Filters.Add(new AuthorizeFilter(policy));
+    // options.Filters.Add(new AuthorizeFilter(policy));
 });
+
+// Add Distributed Cache (required for Session)
+builder.Services.AddDistributedMemoryCache();
 
 // Configure session
 builder.Services.AddSession(options =>
@@ -57,6 +60,14 @@ builder.Services.AddScoped<ReportService>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// --- HANGFIRE: use builder.Configuration (was 'configuration' which is undefined) ---
+builder.Services.AddHangfire(config =>
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireConnection"))
+);
+
+// Add Hangfire Server
+builder.Services.AddHangfireServer();
+
 // Logging & Session Services
 builder.Services.AddScoped<LogService>();
 builder.Services.AddHttpContextAccessor();
@@ -66,7 +77,7 @@ builder.Services.AddScoped<SessionService>();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<NotificationService>();
 
-
+// Repositories & Services registrations...
 builder.Services.AddScoped<ILoginRepository, LoginRepository>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 
@@ -78,8 +89,16 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 
 builder.Services.AddScoped<IModeratorRepository, ModeratorRepository>();
 builder.Services.AddScoped<IModeratorService, ModeratorService>();
-// Add Distributed Cache (Required for Session)
-builder.Services.AddDistributedMemoryCache();
+
+//Session
+builder.Services.AddScoped<ISingleSessionManagerService, SingleSessionManagerService>();
+
+//builder.Services.AddSession(options =>
+//{
+//    options.IdleTimeout = TimeSpan.FromHours(1);
+//    options.Cookie.HttpOnly = true;
+//    options.Cookie.IsEssential = true;
+//});
 
 // ==============================
 // 2. Build the app
@@ -95,10 +114,10 @@ using (var scope = app.Services.CreateScope())
     // Will apply migrations and seed only when table(s) are empty
     Seeders.RunSeeders(db);
 }
+
 // ==============================
 // 3. Configure the HTTP Request Pipeline
 // ==============================
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -107,25 +126,31 @@ if (!app.Environment.IsDevelopment())
 
 // Middleware Order (IMPORTANT!)
 app.UseHttpsRedirection();
-app.UseStaticFiles();  // Serve static files (CSS, JS, etc.)
+app.UseStaticFiles();
 app.UseRouting();
-app.UseSession(); // Ensure session is enabled before authentication
+app.UseSession();
 app.UseAuthentication();
 app.UseMiddleware<UserValidationMiddleware>();
 app.UseAuthorization();
 
+// Hangfire Dashboard (optional — you can protect it with authorization)
+app.UseHangfireDashboard("/hangfire"); // Consider adding Authorization if needed
 
-// Map static assets and routes
-app.MapStaticAssets();
+// Serve static files (for wwwroot or other folders)
+app.UseDefaultFiles();  // optional – serves index.html if present
+app.UseStaticFiles();   // enable static file serving
 
+// Map MVC routes
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Homepage}/{action=Index}/{id?}"
-).WithStaticAssets();
+    pattern: "{controller=Homepage}/{action=Index}/{id?}");
+
 
 // SignalR Hub Mapping
 app.MapHub<IncidentHub>("/incidentHub");
 app.MapHub<NotificationHub>("/notificationHub");
 
-// Run the application
+// Example: schedule a recurring job (every 5 minutes)
+RecurringJob.AddOrUpdate("my-job-id", () => Console.WriteLine("Hello from Hangfire!"), "*/5 * * * *");
+
 app.Run();

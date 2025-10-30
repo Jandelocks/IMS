@@ -1,0 +1,11 @@
+﻿@{
+    var pages = Context.Request.Query["page"].ToString();
+}
+<div class="container mt-5 text-center">
+    <div class="card shadow-sm p-4">
+        <h3 class="text-warning mb-3">Page Locked</h3>
+        <p>The page <strong>@pages</strong> is currently being viewed by another user.</p>
+        <p>Please wait until it becomes available.</p>
+        <a href="/" class="btn btn-primary mt-3">Return Home</a>
+    </div>
+</div>

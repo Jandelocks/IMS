@@ -1,6 +1,7 @@
-﻿using IMS.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using IMS.Attributes;
+using IMS.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace IMS.Controllers
 {
@@ -34,6 +35,7 @@ namespace IMS.Controllers
             return RedirectToAction("Dashboard");
         }
 
+        [SingleSession]
         public async Task<IActionResult> Reports() =>
             View("Report", await _userService.GetReportsAsync(_sessionService.GetUserId()));
 
@@ -57,6 +59,7 @@ namespace IMS.Controllers
             return RedirectToAction("Reports");
         }
 
+        [SingleSession]
         public async Task<IActionResult> Dashboard()
         {
             var userId = _sessionService.GetUserId();

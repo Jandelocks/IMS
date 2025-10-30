@@ -16,7 +16,7 @@ namespace IMS.Services
 
         public void AddLog(int userId, string action)
         {
-            var user = _context.users.FirstOrDefault(u => u.user_id == userId);
+            var user = _context.Users.FirstOrDefault(u => u.user_id == userId);
             if (user != null)
             {
                 var log = new LogsModel
@@ -28,7 +28,7 @@ namespace IMS.Services
                     token = Guid.NewGuid().ToString()
                 };
 
-                _context.logs.Add(log);
+                _context.Logs.Add(log);
                 _context.SaveChanges();
             }
         }

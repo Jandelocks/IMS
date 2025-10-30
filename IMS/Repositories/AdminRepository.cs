@@ -15,28 +15,28 @@ namespace IMS.Repositories
 
         public async Task<UsersModel> GetUserByIdAsync(int id)
         {
-            return await _context.users.FindAsync(id);
+            return await _context.Users.FindAsync(id);
         }
 
         public async Task<UsersModel> GetUserByTokenAsync(string token)
         {
-            return await _context.users.FirstOrDefaultAsync(u => u.token == token);
+            return await _context.Users.FirstOrDefaultAsync(u => u.token == token);
         }
 
         public async Task<List<UsersModel>> GetAllUsersExceptAsync(int excludeUserId)
         {
-            return await _context.users.Where(i => i.user_id != excludeUserId).ToListAsync();
+            return await _context.Users.Where(i => i.user_id != excludeUserId).ToListAsync();
         }
 
         public async Task<bool> UpdateUserAsync(UsersModel user)
         {
-            _context.users.Update(user);
+            _context.Users.Update(user);
             return await SaveChangesAsync();
         }
 
         public async Task<bool> DeleteUserAsync(UsersModel user)
         {
-            _context.users.Remove(user);
+            _context.Users.Remove(user);
             return await SaveChangesAsync();
         }
 

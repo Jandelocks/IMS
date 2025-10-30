@@ -17,34 +17,34 @@ namespace IMS.Repositories
 
         public UsersModel? GetUserByEmail(string email)
         {
-            return _context.users.FirstOrDefault(u => u.email == email);
+            return _context.Users.FirstOrDefault(u => u.email == email);
         }
 
         public UsersModel? GetUserByResetToken(string token)
         {
-            return _context.users.FirstOrDefault(u => u.token_forgot == token);
+            return _context.Users.FirstOrDefault(u => u.token_forgot == token);
         }
 
         public async Task AddUserAsync(UsersModel user)
         {
-            await _context.users.AddAsync(user);
+            await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateUserAsync(UsersModel user)
         {
-            _context.users.Update(user);
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
 
         public async Task<UsersModel?> GetUserByIdAsync(int userId)
         {
-            return await _context.users.FindAsync(userId);
+            return await _context.Users.FindAsync(userId);
         }
 
         public bool EmailExists(string email)
         {
-            return _context.users.Any(u => u.email == email);
+            return _context.Users.Any(u => u.email == email);
         }
 
         public async Task SaveChangesAsync()

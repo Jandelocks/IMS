@@ -1,4 +1,5 @@
-﻿using IMS.Data;
+﻿using IMS.Attributes;
+using IMS.Data;
 using IMS.Models;
 using IMS.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +25,7 @@ namespace IMS.Controllers
             _sessionService = sessionService;
             _moderatorService = moderatorService;
         }
-
+        [SingleSession]
         public async Task<IActionResult> Index()
         {
             int userId = _sessionService.GetUserId();
@@ -78,7 +79,7 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> Department(string department)
         {
-            var departmentUsers = await _context.departments
+            var departmentUsers = await _context.Departments
                 .FirstOrDefaultAsync(d => d.department == department);
 
             if (departmentUsers == null)
@@ -86,11 +87,11 @@ namespace IMS.Controllers
                 return NotFound();
             }
 
-            var users = await _context.users
+            var users = await _context.Users
                 .Where(u => u.department == departmentUsers.department)
                 .ToListAsync();
 
-            var categories = await _context.categories
+            var categories = await _context.Categories
                 .Where(i => i.department_id == departmentUsers.department_id)
                 .ToListAsync();
 
@@ -110,7 +111,7 @@ namespace IMS.Controllers
             if (userId == null)
                 return "N/A";
 
-            var userDepartment = _context.users
+            var userDepartment = _context.Users
                 .Where(u => u.user_id.ToString() == userId)
                 .Select(u => u.department)
                 .FirstOrDefault();

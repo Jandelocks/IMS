@@ -19,7 +19,7 @@ namespace IMS.Services
 
         public byte[] GenerateIncidentReport(int incidentId)
         {
-            var incident = _context.incidents
+            var incident = _context.Incidents
                 .Where(i => i.incident_id == incidentId)
                 .Select(i => new
                 {
@@ -30,17 +30,17 @@ namespace IMS.Services
                     i.priority,
                     i.reported_at,
                     UserFullName = i.User.full_name, // Reported by
-                    ModeratorFullName = _context.users
+                    ModeratorFullName = _context.Users
                         .Where(m => m.user_id == i.assigned_too)
                         .Select(m => m.full_name)
                         .FirstOrDefault(), // Assigned Moderator
-                    ModeratorDepartment = _context.users
+                    ModeratorDepartment = _context.Users
                         .Where(m => m.user_id == i.assigned_too)
                         .Select(m => m.department)
                         .FirstOrDefault(), // Moderator's Department
-                    Updates = _context.updates.Where(u => u.incident_id == incidentId)
+                    Updates = _context.Updates.Where(u => u.incident_id == incidentId)
                         .Select(u => new { u.update_text, u.updated_at }).ToList(),
-                    Comments = _context.comments.Where(c => c.incident_id == incidentId)
+                    Comments = _context.Comments.Where(c => c.incident_id == incidentId)
                         .Select(c => new { c.comment_text, c.commented_at, c.rating, User = c.User.full_name })
                         .ToList() // Fetching user feedback with rating
                 })

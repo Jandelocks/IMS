@@ -22,7 +22,7 @@ public class UserValidationMiddleware
 
             if (userId != null)
             {
-                var user = dbContext.users.FirstOrDefault(u => u.user_id.ToString() == userId);
+                var user = dbContext.Users.FirstOrDefault(u => u.user_id.ToString() == userId);
 
                 if (user == null)
                 {

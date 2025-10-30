@@ -1,217 +1,193 @@
 ﻿@model List<CategoriesModel>
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>IMS - Incident Management System</title>
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+        <ul class="navbar-nav">
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="#" class="nav-link">Submit Report</a>
+            </li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <a asp-controller="profile" asp-action="" class="nav-link"><i class="fas fa-user"></i> Profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-danger" asp-controller="login" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </li>
+        </ul>
+    </nav>
 
-    <!-- AdminLTE CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-</head>
-<body class="hold-transition sidebar-mini layout-fixed">
-    <div class="wrapper">
-        <!-- Navbar -->
-        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
-                </li>
-            </ul>
-            <ul class="navbar-nav">
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="#" class="nav-link">Submit Report</a>
-                </li>
-            </ul>
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a asp-controller="profile" asp-action="" class="nav-link"><i class="fas fa-user"></i> Profile</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-danger" asp-controller="login" asp-action="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                </li>
-            </ul>
-        </nav>
-
-        <!-- Sidebar -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <a href="#" class="brand-link text-center">
-                <span class="brand-text font-weight-bold">
-                    IMS -
-                    @if (User.IsInRole("admin"))
-                    {
-                        <text>Admin</text>
-                    }
-                    else if (User.IsInRole("moderator"))
-                    {
-                        <text>Moderator</text>
-                    }
-                    else
-                    {
-                        <text>User</text>
-                    }
-                </span>
-            </a>
-            <div class="sidebar">
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                        <li class="nav-item">
-                            <a asp-action="dashboard" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>Dashboard</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a asp-action="ReportIncident" class="nav-link active">
-                                <i class="nav-icon fas fa-file-alt"></i>
-                                <p>Submit Report</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a asp-action="reports" class="nav-link">
-                                <i class="nav-icon fas fa-file-alt"></i>
-                                <p>Reports</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a asp-action="Closed" class="nav-link">
-                                <i class="nav-icon fa-solid fa-clipboard-check"></i>
-                                <p>Closed Cases</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </aside>
-
-        <!-- Content Wrapper -->
-        <div class="content-wrapper">
-            <div class="content-header">
-                <div class="container-fluid">
-                    <div class="row mb-2">
-                        <div class="col-sm-6">
-                            <h1 class="m-0">Submit Incident Report</h1>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <section class="content">
-                <div class="container-fluid">
-                    <div class="card shadow-lg">
-                        <div class="card-header bg-dark text-white">
-                            <h4 class="mb-0"><i class="fas fa-exclamation-circle"></i> Report an Incident To : @ViewBag.DepartmentName Department</h4>
-                        </div>
-                        <div class="card-body">
-                            <form method="post" asp-action="submitreports" enctype="multipart/form-data" class="needs-validation">
-                                <!-- Incident Title -->
-
-                                <input type="hidden" name="departmentId" value="@ViewBag.DepartmentId">
-
-                                <div class="form-floating mb-3">
-                                    <input type="text" name="tittle" class="form-control" id="incidentTitle" placeholder="Enter incident title" required>
-                                    <label for="incidentTitle"><i class="fas fa-heading"></i> Incident Title</label>
-                                    <div class="invalid-feedback">Please provide an incident title.</div>
-                                </div>
-
-                                <!-- Incident Description -->
-                                <div class="form-floating mb-3">
-                                    <textarea class="form-control" name="description" id="incidentDescription" placeholder="Describe the incident..." required style="height: 120px;"></textarea>
-                                    <label for="incidentDescription"><i class="fas fa-align-left"></i> Description</label>
-                                    <div class="invalid-feedback">Please provide a description of the incident.</div>
-                                </div>
-
-                                <!-- Incident Category -->
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-list"></i> Incident Category</label>
-                                    <select class="form-select" name="category" required>
-                                        <option value="" disabled selected>Select Category</option>
-                                        @foreach (var cat in Model)
-                                        {
-                                            <option value="@cat.category_name">@cat.category_name</option>
-                                        }
-                                    </select>
-                                    <div class="invalid-feedback">Please select a category.</div>
-                                </div>
-
-                                <!-- Priority Level -->
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-exclamation-triangle"></i> Priority Level</label>
-                                    <select class="form-select" name="priority" required>
-                                        <option value="High" class="text-danger">🔴 High</option>
-                                        <option value="Medium" class="text-warning">🟡 Medium</option>
-                                        <option value="Low" class="text-success">🟢 Low</option>
-                                    </select>
-                                    <div class="invalid-feedback">Please select a priority level.</div>
-                                </div>
-
-                                <!-- File Upload with Bootstrap Styling -->
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-upload"></i> Attach Evidence</label>
-                                    <div class="input-group">
-                                        <input type="file" class="form-control" id="imageInput" name="images" accept="image/*" multiple>
-                                        <label class="input-group-text btn btn-outline-secondary" for="imageInput">
-                                            <i class="fas fa-paperclip"></i>
-                                        </label>
-                                    </div>
-                                    <div class="form-text">Accepted file types: JPG, PNG, GIF (Max: 5MB per file).</div>
-
-                                    <!-- Image Previews -->
-                                    <div class="mt-3 d-none text-center" id="imagePreviewContainer">
-                                        <label class="form-label fw-bold">Image Previews:</label>
-                                        <div class="border p-2 rounded shadow-sm bg-light d-flex flex-wrap justify-content-center" id="imagePreviewWrapper"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Submit Button -->
-                                <div class="text-end">
-                                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </div>
-
-    <!-- jQuery -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-
-    <!-- Bootstrap and AdminLTE JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-    <!-- Bootstrap 5 Image Preview Script -->
-    <script>
-        document.getElementById("imageInput").addEventListener("change", function(event) {
-            const container = document.getElementById("imagePreviewWrapper");
-            const previewContainer = document.getElementById("imagePreviewContainer");
-
-            container.innerHTML = ""; // Clear previous previews
-            previewContainer.classList.toggle("d-none", event.target.files.length === 0);
-
-            for (let file of event.target.files) {
-                if (file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const img = document.createElement("img");
-                        img.src = e.target.result;
-                        img.className = "img-fluid rounded m-1";
-                        img.style.maxWidth = "150px";
-                        img.style.height = "auto";
-                        container.appendChild(img);
-                    };
-                    reader.readAsDataURL(file);
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="#" class="brand-link text-center">
+            <span class="brand-text font-weight-bold">
+                IMS -
+                @if (User.IsInRole("admin"))
+                {
+                    <text>Admin</text>
                 }
+                else if (User.IsInRole("moderator"))
+                {
+                    <text>Moderator</text>
+                }
+                else
+                {
+                    <text>User</text>
+                }
+            </span>
+        </a>
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    <li class="nav-item">
+                        <a asp-action="dashboard" class="nav-link">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-action="ReportIncident" class="nav-link active">
+                            <i class="nav-icon fas fa-file-alt"></i>
+                            <p>Submit Report</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-action="reports" class="nav-link">
+                            <i class="nav-icon fas fa-file-alt"></i>
+                            <p>Reports</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-action="Closed" class="nav-link">
+                            <i class="nav-icon fa-solid fa-clipboard-check"></i>
+                            <p>Closed Cases</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Submit Incident Report</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-dark text-white">
+                        <h4 class="mb-0"><i class="fas fa-exclamation-circle"></i> Report an Incident To : @ViewBag.DepartmentName Department</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-action="submitreports" enctype="multipart/form-data" class="needs-validation">
+                            <!-- Incident Title -->
+
+                            <input type="hidden" name="departmentId" value="@ViewBag.DepartmentId">
+
+                            <div class="form-floating mb-3">
+                                <input type="text" name="tittle" class="form-control" id="incidentTitle" placeholder="Enter incident title" required>
+                                <label for="incidentTitle"><i class="fas fa-heading"></i> Incident Title</label>
+                                <div class="invalid-feedback">Please provide an incident title.</div>
+                            </div>
+
+                            <!-- Incident Description -->
+                            <div class="form-floating mb-3">
+                                <textarea class="form-control" name="description" id="incidentDescription" placeholder="Describe the incident..." required style="height: 120px;"></textarea>
+                                <label for="incidentDescription"><i class="fas fa-align-left"></i> Description</label>
+                                <div class="invalid-feedback">Please provide a description of the incident.</div>
+                            </div>
+
+                            <!-- Incident Category -->
+                            <div class="mb-3">
+                                <label class="form-label"><i class="fas fa-list"></i> Incident Category</label>
+                                <select class="form-select" name="category" required>
+                                    <option value="" disabled selected>Select Category</option>
+                                    @foreach (var cat in Model)
+                                    {
+                                        <option value="@cat.category_name">@cat.category_name</option>
+                                    }
+                                </select>
+                                <div class="invalid-feedback">Please select a category.</div>
+                            </div>
+
+                            <!-- Priority Level -->
+                            <div class="mb-3">
+                                <label class="form-label"><i class="fas fa-exclamation-triangle"></i> Priority Level</label>
+                                <select class="form-select" name="priority" required>
+                                    <option value="High" class="text-danger">🔴 High</option>
+                                    <option value="Medium" class="text-warning">🟡 Medium</option>
+                                    <option value="Low" class="text-success">🟢 Low</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a priority level.</div>
+                            </div>
+
+                            <!-- File Upload with Bootstrap Styling -->
+                            <div class="mb-3">
+                                <label class="form-label"><i class="fas fa-upload"></i> Attach Evidence</label>
+                                <div class="input-group">
+                                    <input type="file" class="form-control" id="imageInput" name="images" accept="image/*" multiple>
+                                    <label class="input-group-text btn btn-outline-secondary" for="imageInput">
+                                        <i class="fas fa-paperclip"></i>
+                                    </label>
+                                </div>
+                                <div class="form-text">Accepted file types: JPG, PNG, GIF (Max: 5MB per file).</div>
+
+                                <!-- Image Previews -->
+                                <div class="mt-3 d-none text-center" id="imagePreviewContainer">
+                                    <label class="form-label fw-bold">Image Previews:</label>
+                                    <div class="border p-2 rounded shadow-sm bg-light d-flex flex-wrap justify-content-center" id="imagePreviewWrapper"></div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Bootstrap 5 Image Preview Script -->
+<script>
+    document.getElementById("imageInput").addEventListener("change", function (event) {
+        const container = document.getElementById("imagePreviewWrapper");
+        const previewContainer = document.getElementById("imagePreviewContainer");
+
+        container.innerHTML = ""; // Clear previous previews
+        previewContainer.classList.toggle("d-none", event.target.files.length === 0);
+
+        for (let file of event.target.files) {
+            if (file.type.startsWith("image/")) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.className = "img-fluid rounded m-1";
+                    img.style.maxWidth = "150px";
+                    img.style.height = "auto";
+                    container.appendChild(img);
+                };
+                reader.readAsDataURL(file);
             }
-        });
-    </script>
-</body>
-</html>
+        }
+    });
+</script>

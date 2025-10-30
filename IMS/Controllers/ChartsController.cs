@@ -22,17 +22,17 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> GetIncidentCounts()
         {
-            var dailyCount = await _context.incidents
+            var dailyCount = await _context.Incidents
                 .GroupBy(i => i.reported_at.Date)
                 .Select(g => new { Date = g.Key, Count = g.Count() })
                 .ToListAsync();
 
-            var monthlyCount = await _context.incidents
+            var monthlyCount = await _context.Incidents
                 .GroupBy(i => new { i.reported_at.Year, i.reported_at.Month })
                 .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Count = g.Count() })
                 .ToListAsync();
 
-            var yearlyCount = await _context.incidents
+            var yearlyCount = await _context.Incidents
                 .GroupBy(i => i.reported_at.Year)
                 .Select(g => new { Year = g.Key, Count = g.Count() })
                 .ToListAsync();
@@ -44,7 +44,7 @@ namespace IMS.Controllers
         [HttpGet]
         public async Task<IActionResult> GetIncidentData(string filter)
         {
-            var query = _context.incidents.AsQueryable();
+            var query = _context.Incidents.AsQueryable();
 
             if (filter == "daily")
             {
@@ -71,7 +71,7 @@ namespace IMS.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUserRoleData(string filter)
         {
-            var query = _context.users.AsQueryable();
+            var query = _context.Users.AsQueryable();
 
             if (filter == "daily")
             {
@@ -101,15 +101,15 @@ namespace IMS.Controllers
             var startOfMonth = new DateTime(today.Year, today.Month, 1);
             var startOfYear = new DateTime(today.Year, 1, 1);
 
-            var dailyCount = await _context.incidents
+            var dailyCount = await _context.Incidents
                 .Where(i => i.assigned_too == userId && i.reported_at.Date == today)
                 .CountAsync();
 
-            var monthlyCount = await _context.incidents
+            var monthlyCount = await _context.Incidents
                 .Where(i => i.assigned_too == userId && i.reported_at >= startOfMonth)
                 .CountAsync();
 
-            var yearlyCount = await _context.incidents
+            var yearlyCount = await _context.Incidents
                 .Where(i => i.assigned_too == userId && i.reported_at >= startOfYear)
                 .CountAsync();
 
@@ -130,13 +130,13 @@ namespace IMS.Controllers
             var startOfYear = new DateTime(today.Year, 1, 1);
 
             // Get department of the logged-in moderator
-            var moderator = await _context.users.FindAsync(userId);
+            var moderator = await _context.Users.FindAsync(userId);
             if (moderator == null || string.IsNullOrEmpty(moderator.department))
                 return Json(new { error = "User not found or has no department assigned." });
 
             string department = moderator.department;
 
-            var departmentIncidents = await _context.incidents
+            var departmentIncidents = await _context.Incidents
                 .Where(i => i.Department.department == department && i.assigned_too == userId)
                 .GroupBy(i => i.Department)
                 .Select(g => new

@@ -1,4 +1,5 @@
-﻿using IMS.Data;
+﻿using IMS.Attributes;
+using IMS.Data;
 using IMS.Models;
 using IMS.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -31,11 +32,11 @@ namespace IMS.Controllers
             _notificationService = notificationService;
             _adminService = adminService;
         }
-
+        [SingleSession]
         public async Task<IActionResult> Index()
         {
-            var incident = await _context.incidents.Where(i => i.status == "Pending").OrderByDescending(u => u.incident_id).ToListAsync();
-            var incidents = await _context.incidents.ToListAsync();
+            var incident = await _context.Incidents.Where(i => i.status == "Pending").OrderByDescending(u => u.incident_id).ToListAsync();
+            var incidents = await _context.Incidents.ToListAsync();
             ViewBag.TotalReports = incidents.Count;
             ViewBag.PendingReports = incidents.Count(i => i.status == "Pending");
             ViewBag.ResolvedReports = incidents.Count(i => i.status == "Closed");
@@ -46,14 +47,14 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> Incidents()
         {
-            var incidents = await _context.incidents.Where(u => u.status != "Closed").ToListAsync();
-            var attachments = await _context.attachments.ToListAsync();
-            var updates = await _context.updates
+            var incidents = await _context.Incidents.Where(u => u.status != "Closed").ToListAsync();
+            var attachments = await _context.Attachments.ToListAsync();
+            var updates = await _context.Updates
                                         .Where(u => incidents.Select(i => i.incident_id)
                                         .Contains(u.incident_id))
                                         .ToListAsync();
-            var departments = await _context.departments.ToListAsync();
-            var users = await _context.users.ToListAsync();
+            var departments = await _context.Departments.ToListAsync();
+            var users = await _context.Users.ToListAsync();
 
             var incidentList = incidents.Select(i =>
             {
@@ -79,7 +80,7 @@ namespace IMS.Controllers
         {
             int userId = _sessionService.GetUserId();
             var Users = await _adminService.GetAllUsersExceptAsync(userId);
-            var Departments = await _context.departments.ToListAsync();
+            var Departments = await _context.Departments.ToListAsync();
 
             var viewModel = new IncidentViewModel
             {
@@ -121,26 +122,26 @@ namespace IMS.Controllers
         public async Task<IActionResult> Delete(int Id)
         {
             int userId = _sessionService.GetUserId();
-            var incident = await _context.incidents.FindAsync(Id);
+            var incident = await _context.Incidents.FindAsync(Id);
 
             if (incident == null)
             {
                 return NotFound();
             }
 
-            var user = await _context.users.FindAsync(incident.user_id);
+            var user = await _context.Users.FindAsync(incident.user_id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            var attachments = _context.attachments.Where(a => a.incident_id == Id);
+            var attachments = _context.Attachments.Where(a => a.incident_id == Id);
             if (attachments.Any())
             {
-                _context.attachments.RemoveRange(attachments);
+                _context.Attachments.RemoveRange(attachments);
             }
 
-            _context.incidents.Remove(incident);
+            _context.Incidents.Remove(incident);
             _logService.AddLog(userId, $"Remove Incident: {incident.tittle}");
             await _context.SaveChangesAsync();
             await _notificationService.SendNotification(user.user_id, "Your Report was Deleted");
@@ -151,7 +152,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> AssignIncident(int id, int assignedUserId)
         {
             int userId = _sessionService.GetUserId();
-            var incident = await _context.incidents.FindAsync(id);
+            var incident = await _context.Incidents.FindAsync(id);
             if (incident == null)
             {
                 return NotFound();
@@ -168,8 +169,8 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> Categories()
         {
-            var categories = await _context.categories.ToListAsync();
-            var departments = await _context.departments.ToListAsync();
+            var categories = await _context.Categories.ToListAsync();
+            var departments = await _context.Departments.ToListAsync();
 
             var viewModel = new CategoriesDepartmentsViewModel
             {
@@ -193,7 +194,7 @@ namespace IMS.Controllers
                 token = token
             };
 
-            _context.categories.Add(newcategory);
+            _context.Categories.Add(newcategory);
             await _context.SaveChangesAsync();
 
             _logService.AddLog((int)userId, $"Add new category: {category_name}");
@@ -204,12 +205,12 @@ namespace IMS.Controllers
         public IActionResult DeleteCategory(int Id)
         {
             int userId = _sessionService.GetUserId();
-            var cat = _context.categories.Find(Id);
+            var cat = _context.Categories.Find(Id);
             if (cat == null)
             {
                 return NotFound();
             }
-            _context.categories.Remove(cat);
+            _context.Categories.Remove(cat);
             _context.SaveChanges();
 
             _logService.AddLog(userId, $"Deleted category: {cat.category_name}");
@@ -220,7 +221,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> EditCategory(int id, string category_name, string category_desc)
         {
             int userId = _sessionService.GetUserId();
-            var cat = await _context.categories.FindAsync(id);
+            var cat = await _context.Categories.FindAsync(id);
             if (cat == null)
             {
                 return Content("Invalid Action");
@@ -236,19 +237,19 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> usersLogs()
         {
-            var logs = await _context.logs.OrderByDescending(l => l.log_id).ToListAsync();
+            var logs = await _context.Logs.OrderByDescending(l => l.log_id).ToListAsync();
             return View("logs", logs);
         }
 
         public async Task<IActionResult> Department()
         {
-            var departments = await _context.departments.ToListAsync();
+            var departments = await _context.Departments.ToListAsync();
             return View("Department", departments);
         }
 
         public async Task<IActionResult> DepartmentDetails(string token)
         {
-            var department = await _context.departments
+            var department = await _context.Departments
                 .FirstOrDefaultAsync(d => d.token == token);
 
             if (department == null)
@@ -256,11 +257,11 @@ namespace IMS.Controllers
                 return NotFound();
             }
 
-            var users = await _context.users
+            var users = await _context.Users
                 .Where(u => u.department == department.department)
                 .ToListAsync();
 
-            var categories = await _context.categories.Where(i => i.department_id == department.department_id).ToListAsync();
+            var categories = await _context.Categories.Where(i => i.department_id == department.department_id).ToListAsync();
 
             var viewModel = new IncidentViewModel
             {
@@ -298,7 +299,7 @@ namespace IMS.Controllers
                 token = token
             };
 
-            _context.departments.Add(newDepartment);
+            _context.Departments.Add(newDepartment);
             await _context.SaveChangesAsync();
             _logService.AddLog(userId, $"Add new department: {department_name}");
             return RedirectToAction("Department");
@@ -308,12 +309,12 @@ namespace IMS.Controllers
         public IActionResult DeleteDepartment(int Id)
         {
             int userId = _sessionService.GetUserId();
-            var dep = _context.departments.Find(Id);
+            var dep = _context.Departments.Find(Id);
             if (dep == null)
             {
                 return NotFound();
             }
-            _context.departments.Remove(dep);
+            _context.Departments.Remove(dep);
             _context.SaveChanges();
             _logService.AddLog(userId, $"Deleted department: {dep.department}");
             return RedirectToAction("Department");
@@ -323,7 +324,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> EditDepartment(int id, string department_name, string department_desc, IFormFile image)
         {
             int userId = _sessionService.GetUserId();
-            var department = await _context.departments.FindAsync(id);
+            var department = await _context.Departments.FindAsync(id);
 
             string imagePath = department.ImagePath;
 
@@ -359,7 +360,7 @@ namespace IMS.Controllers
         public async Task<IActionResult> DeleteUser(string token)
         {
             int userId = _sessionService.GetUserId();
-            var user = await _context.users.FirstOrDefaultAsync(u => u.token == token);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.token == token);
 
             if (user == null)
             {
@@ -387,7 +388,7 @@ namespace IMS.Controllers
                 return BadRequest();
             }
 
-            var user = await _context.users.FirstOrDefaultAsync(u => u.token == token);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.token == token);
             if (user == null)
             {
                 return NotFound();
@@ -406,11 +407,11 @@ namespace IMS.Controllers
 
         public async Task<IActionResult> Closed()
         {
-            var incidents = await _context.incidents.Where(i => i.status == "Closed").ToListAsync();
-            var updates = await _context.updates.ToListAsync();
-            var Comments = await _context.comments.ToListAsync();
-            var users = await _context.users.ToListAsync();
-            var attachments = await _context.attachments.ToListAsync();
+            var incidents = await _context.Incidents.Where(i => i.status == "Closed").ToListAsync();
+            var updates = await _context.Updates.ToListAsync();
+            var Comments = await _context.Comments.ToListAsync();
+            var users = await _context.Users.ToListAsync();
+            var attachments = await _context.Attachments.ToListAsync();
 
             var resolvedlist = incidents.Select(i => new IncidentViewModel
             {
