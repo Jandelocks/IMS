@@ -4,11 +4,11 @@ namespace IMS.Services
 {
     public interface ISingleSessionManagerService
     {
-        // --- SESSION MANAGEMENT ---
-        bool IsUserAlreadyLoggedIn(string userId, string currentSessionId);
-        void RegisterUserSession(string userId, string sessionId, string deviceInfo, string ip);
+        // --- TOKEN-BASED SESSION MANAGEMENT ---
+        string? GetUserToken(string userId);
+        void RegisterUserSession(string userId, string token, string deviceInfo, string ip);
         void RemoveUserSession(string userId);
-        string? GetUserSessionId(string userId);
+        SessionModel? GetUserSession(string userId);
         List<SessionModel> GetActiveSessions();
 
         // --- PAGE LOCKING ---

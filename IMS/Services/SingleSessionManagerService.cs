@@ -1,7 +1,6 @@
 ﻿using IMS.Data;
 using IMS.Models;
 using Microsoft.EntityFrameworkCore;
-using NuGet.Protocol.Core.Types;
 
 namespace IMS.Services
 {
@@ -15,19 +14,28 @@ namespace IMS.Services
             _context = context;
         }
 
-        // ✅ Check if user already logged in with another session
-        public bool IsUserAlreadyLoggedIn(string userId, string currentSessionId)
+        // ✅ Get user's active token
+        public string? GetUserToken(string userId)
         {
             int id = int.Parse(userId);
-            var existing = _context.Sessions
+            return _context.Sessions
                 .AsNoTracking()
-                .FirstOrDefault(s => s.UserId == id);
-
-            return existing != null && existing.SessionId != currentSessionId;
+                .Where(s => s.UserId == id)
+                .Select(s => s.Token)
+                .FirstOrDefault();
         }
 
-        // ✅ Register or update user session
-        public void RegisterUserSession(string userId, string sessionId, string deviceInfo, string ip)
+        // ✅ Get user's session info
+        public SessionModel? GetUserSession(string userId)
+        {
+            int id = int.Parse(userId);
+            return _context.Sessions
+                .AsNoTracking()
+                .FirstOrDefault(s => s.UserId == id);
+        }
+
+        // ✅ Register or update user session with token
+        public void RegisterUserSession(string userId, string token, string deviceInfo, string ip)
         {
             int id = int.Parse(userId);
 
@@ -40,8 +48,11 @@ namespace IMS.Services
                     _context.Sessions.Add(new SessionModel
                     {
                         UserId = id,
-                        UserName = _context.Users.Where(u => u.user_id == id).Select(u => u.full_name).FirstOrDefault() ?? "Unknown",
-                        SessionId = sessionId,
+                        UserName = _context.Users
+                            .Where(u => u.user_id == id)
+                            .Select(u => u.full_name)
+                            .FirstOrDefault() ?? "Unknown",
+                        Token = token,
                         DeviceInfo = deviceInfo,
                         IP = ip,
                         LoginTime = DateTime.UtcNow
@@ -49,7 +60,8 @@ namespace IMS.Services
                 }
                 else
                 {
-                    existing.SessionId = sessionId;
+                    // Update existing session with new token
+                    existing.Token = token;
                     existing.DeviceInfo = deviceInfo;
                     existing.IP = ip;
                     existing.LoginTime = DateTime.UtcNow;
@@ -72,14 +84,6 @@ namespace IMS.Services
             }
         }
 
-        // ✅ Get user’s session ID
-        public string? GetUserSessionId(string userId)
-        {
-            int id = int.Parse(userId);
-            return _context.Sessions.AsNoTracking()
-                .FirstOrDefault(s => s.UserId == id)?.SessionId;
-        }
-
         // ✅ Get all active sessions
         public List<SessionModel> GetActiveSessions()
         {
@@ -87,7 +91,8 @@ namespace IMS.Services
                 .Select(s => new SessionModel
                 {
                     UserId = s.UserId,
-                    SessionId = s.SessionId,
+                    UserName = s.UserName,
+                    Token = s.Token,
                     DeviceInfo = s.DeviceInfo,
                     IP = s.IP,
                     LoginTime = s.LoginTime
@@ -95,7 +100,7 @@ namespace IMS.Services
                 .ToList();
         }
 
-        // --- PAGE LOCKING (still in memory to keep things fast) ---
+        // --- PAGE LOCKING (in-memory for performance) ---
         private static readonly Dictionary<string, string> _pageLocks = new();
 
         public bool TryLockPage(string pageKey, string userId)
@@ -125,8 +130,7 @@ namespace IMS.Services
         {
             lock (_pageLocks)
             {
-                var result = _pageLocks.TryGetValue(pageKey, out lockedBy);
-                return result;
+                return _pageLocks.TryGetValue(pageKey, out lockedBy);
             }
         }
 

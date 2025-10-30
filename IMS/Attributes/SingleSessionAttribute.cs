@@ -35,6 +35,7 @@ namespace IMS.Attributes
             var httpContext = context.HttpContext;
             var sessionService = httpContext.RequestServices.GetRequiredService<ISingleSessionManagerService>();
             var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userToken = httpContext.User.FindFirstValue("Token");
 
             if (string.IsNullOrEmpty(userId))
             {
@@ -42,22 +43,19 @@ namespace IMS.Attributes
                 return;
             }
 
-            var sessionId = httpContext.Session.Id;
-
-            // 🔒 Enforce single-login
+            // 🔒 Enforce single-login using token validation
             if (_enforceSingleLogin)
             {
-                var storedSessionId = sessionService.GetUserSessionId(userId);
+                var storedToken = sessionService.GetUserToken(userId);
 
-                // If user’s current session is not the one stored in DB, force logout
-                if (string.IsNullOrEmpty(storedSessionId) || storedSessionId != sessionId)
+                // If user's token doesn't match stored token, force logout
+                if (string.IsNullOrEmpty(storedToken) || storedToken != userToken)
                 {
                     // Force logout immediately
                     httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme).Wait();
-                    httpContext.Session.Clear();
 
                     // Redirect to login with message
-                    context.Result = new RedirectToActionResult("Index", "SingleSession", new
+                    context.Result = new RedirectToActionResult("Index", "Login", new
                     {
                         message = "Your account was logged in from another device or your session expired."
                     });

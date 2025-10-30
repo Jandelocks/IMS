@@ -108,23 +108,22 @@ namespace IMS.Controllers
                 return RedirectToAction("Index");
             }
 
-            // 🔒 Check if user already logged in somewhere else
-            var sessionId = HttpContext.Session.Id;
-            if (_sessionManager.IsUserAlreadyLoggedIn(user.user_id.ToString(), sessionId))
-            {
-                TempData["ErrorMessage"] = "You are already logged in from another device. Please log out there first.";
-                return RedirectToAction("Index");
-            }
+            // 🔐 Generate NEW token for this login (invalidates all other sessions)
+            var newToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
-            // ✅ Create claims and sign-in
+            // 🔄 Update token in user table
+            user.token = newToken;
+            await _repository.UpdateUserAsync(user);
+
+            // ✅ Create claims with the NEW token
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
-                new Claim(ClaimTypes.Email, user.email),
-                new Claim(ClaimTypes.Role, user.role),
-                new Claim("FullName", user.full_name),
-                new Claim("Token", user.token)
-            };
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.user_id.ToString()),
+        new Claim(ClaimTypes.Email, user.email),
+        new Claim(ClaimTypes.Role, user.role),
+        new Claim("FullName", user.full_name),
+        new Claim("Token", newToken) // This validates the session
+    };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var authProperties = new AuthenticationProperties
@@ -139,12 +138,12 @@ namespace IMS.Controllers
                 authProperties
             );
 
-            // 🧠 Capture session info
+            // 🧠 Capture device info for logging/analytics
             var device = Request.Headers["User-Agent"].ToString();
-            //var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
-            // ✅ Register this user’s session in DB
-            _sessionManager.RegisterUserSession(user.user_id.ToString(), sessionId, device, null);
+            // ✅ Register this session with the new token
+            _sessionManager.RegisterUserSession(user.user_id.ToString(), newToken, device, ip);
 
             // 🧾 Log
             _logService.AddLog(user.user_id, "User logged in");
@@ -166,7 +165,7 @@ namespace IMS.Controllers
             // 🧹 Remove session from DB
             _sessionManager.RemoveUserSession(userId.ToString());
 
-            // 🔐 Rotate token to invalidate existing cookies elsewhere
+            // 🔐 Rotate token in user table (optional extra security)
             var newToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
             var user = await _repository.GetUserByIdAsync(userId);
             if (user != null)
@@ -175,10 +174,8 @@ namespace IMS.Controllers
                 await _repository.UpdateUserAsync(user);
             }
 
-            // 🚪 Sign out and clear session
+            // 🚪 Sign out (clears authentication cookie)
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            Response.Cookies.Delete("UserToken");
-            HttpContext.Session.Clear();
 
             // 🧾 Log action
             _logService.AddLog(userId, "User logged out");
